@@ -30,12 +30,23 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Entorno virtual
+rehilete/
+venv/
+env/
+.venv/
+
 # env files (can opt-in for committing if needed)
+
 .env*
 .env
 
 # vercel
 .vercel
+
+# Imagenens locales del proyecto
+/public/images/*
+!/public/images/.gitkeep
 
 # typescript
 *.tsbuildinfo
