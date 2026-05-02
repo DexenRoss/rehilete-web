@@ -43,6 +43,30 @@ export type ReviewPost = {
   imageSrc: string;
 };
 
+export type ReviewTier = "recomendado" | "favorito" | "esencial";
+
+export type ReviewListPost = {
+  id: string;
+  slug: string;
+  title: string;
+  creator: string;
+  year: number;
+  category: string;
+  quote: string;
+  imageSrc: string;
+  imageAlt: string;
+  tier: ReviewTier;
+  actionTone: "mint" | "orange" | "magenta";
+};
+
+export type ReviewCategoryShortcut = {
+  id: string;
+  label: string;
+  href: string;
+  imageSrc: string;
+  imageAlt: string;
+};
+
 export const reviewCategories = [
   "Cine",
   "Musica",
@@ -134,5 +158,113 @@ export const reviewPosts: ReviewPost[] = [
       from: "#0f5a42",
       to: "#7ed957",
     }),
+  },
+];
+
+// TODO: Replace poster placeholders with final review cover assets when provided.
+export const latestReviewPosts: ReviewListPost[] = [
+  {
+    id: "xoxto-la-piel-del-territorio",
+    slug: "xoxto-la-piel-del-territorio",
+    title: "Xoxto' La Piel del Territorio",
+    creator: "Jalil Mosso Castrejón",
+    year: 2024,
+    category: "Música",
+    quote: '"El corazón de la montaña tlapaneca en código de seis cuerdas."',
+    imageSrc: createPoster({
+      title: "Xoxto'",
+      subtitle: "Jalil Mosso Castrejón",
+      from: "#8c2031",
+      to: "#e58a39",
+    }),
+    imageAlt: "Portada provisional de Xoxto' La Piel del Territorio",
+    tier: "recomendado",
+    actionTone: "mint",
+  },
+  {
+    id: "lodo-lista",
+    slug: "lodo",
+    title: "Lodo",
+    creator: "H.G. Santarriaga",
+    year: 2025,
+    category: "Literatura",
+    quote: '"Lo que es mejor olvidar bajo los siglos y la tierra."',
+    imageSrc: createPoster({
+      title: "Lodo",
+      subtitle: "H.G. Santarriaga",
+      from: "#620b14",
+      to: "#f27e24",
+    }),
+    imageAlt: "Portada provisional de Lodo",
+    tier: "recomendado",
+    actionTone: "orange",
+  },
+  {
+    id: "marchita-lista",
+    slug: "marchita",
+    title: "Marchita",
+    creator: "Silvana Estrada",
+    year: 2022,
+    category: "Música",
+    quote: '"Un logro de la sensibilidad musical mexicana."',
+    imageSrc: createPoster({
+      title: "Marchita",
+      subtitle: "Silvana Estrada",
+      from: "#f1f1f1",
+      to: "#9f9f9f",
+      text: "#111111",
+    }),
+    imageAlt: "Portada provisional de Marchita",
+    tier: "favorito",
+    actionTone: "magenta",
+  },
+  {
+    id: "el-fuego-verde-lista",
+    slug: "el-fuego-verde",
+    title: "El Fuego Verde",
+    creator: "Verónica Murguía",
+    year: 1999,
+    category: "Literatura",
+    quote: '"Fantasía luminosa con un bosque encantado que no se apaga."',
+    imageSrc: createPoster({
+      title: "Fuego Verde",
+      subtitle: "Verónica Murguía",
+      from: "#0c5d43",
+      to: "#76d96d",
+    }),
+    imageAlt: "Portada provisional de El Fuego Verde",
+    tier: "recomendado",
+    actionTone: "mint",
+  },
+];
+
+export const reviewCategoryShortcuts: ReviewCategoryShortcut[] = [
+  {
+    id: "musica",
+    label: "Toda la música",
+    href: "#",
+    imageSrc: "/images/rehilete/Música.png",
+    imageAlt: "Icono de música",
+  },
+  {
+    id: "cine",
+    label: "Todo el cine",
+    href: "#",
+    imageSrc: "/images/rehilete/Cine.png",
+    imageAlt: "Icono de cine",
+  },
+  {
+    id: "literatura",
+    label: "Toda la literatura",
+    href: "#",
+    imageSrc: "/images/rehilete/Literatura.png",
+    imageAlt: "Icono de literatura",
+  },
+  {
+    id: "videojuegos",
+    label: "Todos los juegos",
+    href: "#",
+    imageSrc: "/images/rehilete/Videojuegos.png",
+    imageAlt: "Icono de videojuegos",
   },
 ];

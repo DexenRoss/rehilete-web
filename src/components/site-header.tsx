@@ -3,16 +3,16 @@ import Link from "next/link";
 import { ChevronDown, Facebook, Instagram, Music2 } from "lucide-react";
 
 const navigation = [
-  { label: "Inicio", href: "#" },
-  { label: "Reseñas", href: "#resenas", withChevron: true },
+  { label: "Inicio", href: "/" },
+  { label: "Reseñas", href: "/resenas", withChevron: true },
   { label: "Especiales / Listas", href: "#destacado" },
-  { label: "Nosotros / Contacto", href: "#categorias" },
+  { label: "Nosotros / Contacto", href: "#contacto" },
 ];
 
 const socialLinks = [
-  { label: "Facebook", href: "#", icon: Facebook },
-  { label: "Instagram", href: "#", icon: Instagram },
-  { label: "TikTok", href: "#", icon: Music2 },
+  { label: "Facebook", href: "https://www.facebook.com/rehilete.mex/", icon: Facebook },
+  { label: "Instagram", href: "https://www.instagram.com/rehilete_mx/", icon: Instagram },
+  { label: "TikTok", href: "https://www.tiktok.com/@rehiletemx", icon: Music2 },
 ];
 
 export function SiteHeader() {
@@ -20,7 +20,7 @@ export function SiteHeader() {
     <header className="pt-5">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-5">
         <Link
-          href="#"
+          href="/"
           className="flex items-center gap-2 text-[#111111]"
           aria-label="Rehilete"
         >
