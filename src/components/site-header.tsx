@@ -25,16 +25,13 @@ export function SiteHeader() {
           aria-label="Rehilete"
         >
           <Image
-            src="/images/rehilete/Logo.png"
+            src="/images/rehilete/Rehilete CN.png"
             alt="Isotipo Rehilete"
-            width={94}
-            height={94}
+            width={2519}
+            height={1183}
             priority
             className="h-[84px] w-auto"
           />
-          <span className="-ml-1 text-[4rem] leading-none tracking-[-0.06em]">
-            Rehilete.
-          </span>
         </Link>
 
         <div className="flex w-full flex-col items-center gap-4 pb-2 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center">
