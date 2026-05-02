@@ -21,7 +21,7 @@ export function ReviewsGrid({ posts }: ReviewsGridProps) {
 
         <div className="hidden text-right md:block">
           <Link
-            href="/resenas"
+            href="#"
             className="inline-flex items-center rounded-2xl bg-[#61c8ab] px-5 py-3 text-[1.05rem] font-semibold text-white shadow-[0_10px_24px_rgba(97,200,171,0.32)] transition-transform duration-150 hover:-translate-y-0.5"
           >
             + Reseñas
@@ -42,7 +42,7 @@ export function ReviewsGrid({ posts }: ReviewsGridProps) {
 
       <div className="pt-10 text-center md:hidden">
         <Link
-          href="/resenas"
+          href="#"
           className="inline-flex items-center rounded-2xl bg-[#61c8ab] px-5 py-3 text-[1.05rem] font-semibold text-white shadow-[0_10px_24px_rgba(97,200,171,0.32)]"
         >
           + Reseñas
