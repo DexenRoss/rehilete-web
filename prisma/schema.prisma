@@ -1,15 +1,125 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  ADMIN
+  EDITOR
+}
+
+enum PublicationKind {
+  REVIEW
+  SPECIAL
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model AdminUser {
+  id                  String        @id @default(cuid())
+  name                String
+  email               String        @unique
+  passwordHash        String
+  role                AdminRole     @default(EDITOR)
+  isActive            Boolean       @default(true)
+  createdPublications Publication[] @relation("PublicationCreatedBy")
+  updatedPublications Publication[] @relation("PublicationUpdatedBy")
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+model Publication {
+  id               String            @id @default(cuid())
+  kind             PublicationKind
+  status           PublicationStatus @default(DRAFT)
+  title            String
+  slug             String            @unique
+  subtitle         String?
+  description      String?
+  body             String
+  coverImageUrl    String?
+  coverImageAlt    String?
+  year             Int?
+  workType         String?
+  externalUrl      String?
+  categoryId       String?
+  reviewerId       String?
+  subjectCreatorId String?
+  createdById      String?
+  updatedById      String?
+  publishedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  category         Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  reviewer         Contributor?      @relation("PublicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  subjectCreator   SubjectCreator?   @relation("PublicationSubjectCreator", fields: [subjectCreatorId], references: [id], onDelete: SetNull)
+  createdBy        AdminUser?        @relation("PublicationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy        AdminUser?        @relation("PublicationUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  tags             PublicationTag[]
+
+  @@index([kind, status])
+  @@index([categoryId])
+  @@index([reviewerId])
+  @@index([subjectCreatorId])
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([publishedAt])
+}
+
+model Category {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  slug        String        @unique
+  description String?
+  publications Publication[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Contributor {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  bio          String?
+  imageUrl     String?
+  publications Publication[] @relation("PublicationReviewer")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model SubjectCreator {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  bio          String?
+  imageUrl     String?
+  publications Publication[] @relation("PublicationSubjectCreator")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Tag {
+  id           String           @id @default(cuid())
+  name         String           @unique
+  slug         String           @unique
+  publications PublicationTag[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model PublicationTag {
+  publicationId String
+  tagId         String
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  tag           Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([publicationId, tagId])
+  @@index([tagId])
 }

@@ -1,15 +1,13 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:15
-    container_name: rehilete-db
-    restart: always
+    container_name: rehilete_postgres
+    restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: rehilete
-      POSTGRES_PASSWORD: rehilete123
+      POSTGRES_USER: rehilete_user
+      POSTGRES_PASSWORD: rehilete_password
       POSTGRES_DB: rehilete_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
