@@ -2,9 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Facebook, Instagram, Music2 } from "lucide-react";
 
+import { reviewCategoryPages } from "@/data/review-categories";
+
 const navigation = [
   { label: "Inicio", href: "/" },
-  { label: "Reseñas", href: "/resenas", withChevron: true },
   { label: "Especiales / Listas", href: "#destacado" },
   { label: "Nosotros / Contacto", href: "#contacto" },
 ];
@@ -49,14 +50,48 @@ export function SiteHeader() {
           </div>
 
           <nav className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[1.02rem] font-medium text-black">
-            {navigation.map(({ label, href, withChevron }) => (
+            {navigation.slice(0, 1).map(({ label, href }) => (
               <Link
                 key={label}
                 href={href}
                 className="inline-flex items-center gap-1 border-b border-transparent pb-0.5 transition-colors hover:border-black"
               >
                 <span>{label}</span>
-                {withChevron ? <ChevronDown className="mt-px h-4 w-4" /> : null}
+              </Link>
+            ))}
+
+            <div className="group relative z-20">
+              <Link
+                href="/resenas"
+                className="inline-flex items-center gap-1 border-b border-transparent pb-0.5 transition-colors hover:border-black focus-visible:border-black focus-visible:outline-none"
+                aria-haspopup="true"
+              >
+                <span>Reseñas</span>
+                <ChevronDown className="mt-px h-4 w-4 transition-transform group-hover:rotate-180 group-focus-within:rotate-180" />
+              </Link>
+
+              <div className="invisible absolute left-1/2 top-full w-52 -translate-x-1/2 pt-3 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                <div className="overflow-hidden rounded-xl border border-[#dedede] bg-white py-2 shadow-[0_14px_35px_rgba(0,0,0,0.14)]">
+                  {reviewCategoryPages.map((category) => (
+                    <Link
+                      key={category.slug}
+                      href={`/resenas/${category.slug}`}
+                      className="block px-4 py-2.5 transition-colors hover:bg-[#f3f3f3] focus-visible:bg-[#f3f3f3] focus-visible:outline-none"
+                    >
+                      {category.menuLabel}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {navigation.slice(1).map(({ label, href }) => (
+              <Link
+                key={label}
+                href={href}
+                className="inline-flex items-center gap-1 border-b border-transparent pb-0.5 transition-colors hover:border-black"
+              >
+                <span>{label}</span>
               </Link>
             ))}
           </nav>
