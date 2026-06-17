@@ -33,7 +33,7 @@ const publicationSchema = z.object({
   kind: z.enum(["REVIEW", "SPECIAL"], {
     error: "Selecciona un tipo de publicación.",
   }),
-  status: z.enum(["DRAFT", "PUBLISHED"], {
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"], {
     error: "Selecciona un estado válido.",
   }),
   title: z
@@ -113,11 +113,8 @@ const reviewTierByFormValue = {
   ESENCIAL: PublicationReviewTier.ESENCIAL,
 } as const;
 
-export async function createPublication(
-  _previousState: PublicationFormState,
-  formData: FormData,
-): Promise<PublicationFormState> {
-  const parsed = publicationSchema.safeParse({
+function parsePublicationFormData(formData: FormData) {
+  return publicationSchema.safeParse({
     kind: formData.get("kind"),
     status: formData.get("status"),
     title: formData.get("title"),
@@ -136,6 +133,121 @@ export async function createPublication(
     reviewerId: formData.get("reviewerId"),
     subjectCreatorId: formData.get("subjectCreatorId"),
   });
+}
+
+function toPublicationWriteData(
+  data: z.infer<typeof publicationSchema>,
+): Prisma.PublicationUpdateInput {
+  return {
+    kind: data.kind,
+    status: data.status,
+    title: data.title,
+    slug: data.slug,
+    subtitle: emptyToNull(data.subtitle),
+    description: emptyToNull(data.description),
+    body: data.body,
+    coverImageUrl: emptyToNull(data.coverImageUrl),
+    coverImageAlt: emptyToNull(data.coverImageAlt),
+    year: data.year,
+    rating: data.kind === "REVIEW" ? data.rating : null,
+    reviewTier:
+      data.kind === "REVIEW" && data.reviewTier
+        ? reviewTierByFormValue[data.reviewTier]
+        : null,
+    workType: emptyToNull(data.workType),
+    externalUrl: emptyToNull(data.externalUrl),
+    category: emptyToNull(data.categoryId)
+      ? { connect: { id: data.categoryId } }
+      : { disconnect: true },
+    reviewer: emptyToNull(data.reviewerId)
+      ? { connect: { id: data.reviewerId } }
+      : { disconnect: true },
+    subjectCreator: emptyToNull(data.subjectCreatorId)
+      ? { connect: { id: data.subjectCreatorId } }
+      : { disconnect: true },
+  };
+}
+
+function toPublicationCreateData(
+  data: z.infer<typeof publicationSchema>,
+): Prisma.PublicationCreateInput {
+  return {
+    kind: data.kind,
+    status: data.status,
+    title: data.title,
+    slug: data.slug,
+    subtitle: emptyToNull(data.subtitle),
+    description: emptyToNull(data.description),
+    body: data.body,
+    coverImageUrl: emptyToNull(data.coverImageUrl),
+    coverImageAlt: emptyToNull(data.coverImageAlt),
+    year: data.year,
+    rating: data.kind === "REVIEW" ? data.rating : null,
+    reviewTier:
+      data.kind === "REVIEW" && data.reviewTier
+        ? reviewTierByFormValue[data.reviewTier]
+        : null,
+    workType: emptyToNull(data.workType),
+    externalUrl: emptyToNull(data.externalUrl),
+    category: emptyToNull(data.categoryId)
+      ? { connect: { id: data.categoryId } }
+      : undefined,
+    reviewer: emptyToNull(data.reviewerId)
+      ? { connect: { id: data.reviewerId } }
+      : undefined,
+    subjectCreator: emptyToNull(data.subjectCreatorId)
+      ? { connect: { id: data.subjectCreatorId } }
+      : undefined,
+    publishedAt: data.status === "PUBLISHED" ? new Date() : null,
+  };
+}
+
+function getPublicationMutationErrorState(error: unknown): PublicationFormState {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2002") {
+      return {
+        message: "Ya existe una publicación con ese slug.",
+        fieldErrors: { slug: ["El slug debe ser único."] },
+      };
+    }
+
+    if (error.code === "P2003") {
+      return {
+        message:
+          "Una categoría, contributor o creador seleccionado ya no existe. Recarga la página.",
+      };
+    }
+
+    if (error.code === "P2025") {
+      return {
+        message: "La publicación ya no existe. Recarga la página.",
+      };
+    }
+  }
+
+  console.error("No se pudo guardar la publicación", error);
+  return {
+    message: "No se pudo guardar la publicación. Inténtalo de nuevo.",
+  };
+}
+
+function revalidatePublicationPaths(slug?: string) {
+  revalidatePath("/");
+  revalidatePath("/admin/publicaciones");
+  revalidatePath("/especiales");
+  revalidatePath("/resenas");
+
+  if (slug) {
+    revalidatePath(`/especiales/${slug}`);
+    revalidatePath(`/resenas/review/${slug}`);
+  }
+}
+
+export async function createPublication(
+  _previousState: PublicationFormState,
+  formData: FormData,
+): Promise<PublicationFormState> {
+  const parsed = parsePublicationFormData(formData);
 
   if (!parsed.success) {
     return {
@@ -148,56 +260,62 @@ export async function createPublication(
 
   try {
     await prisma.publication.create({
-      data: {
-        kind: data.kind,
-        status: data.status,
-        title: data.title,
-        slug: data.slug,
-        subtitle: emptyToNull(data.subtitle),
-        description: emptyToNull(data.description),
-        body: data.body,
-        coverImageUrl: emptyToNull(data.coverImageUrl),
-        coverImageAlt: emptyToNull(data.coverImageAlt),
-        year: data.year,
-        rating: data.kind === "REVIEW" ? data.rating : null,
-        reviewTier:
-          data.kind === "REVIEW" && data.reviewTier
-            ? reviewTierByFormValue[data.reviewTier]
-            : null,
-        workType: emptyToNull(data.workType),
-        externalUrl: emptyToNull(data.externalUrl),
-        categoryId: emptyToNull(data.categoryId),
-        reviewerId: emptyToNull(data.reviewerId),
-        subjectCreatorId: emptyToNull(data.subjectCreatorId),
-        publishedAt: data.status === "PUBLISHED" ? new Date() : null,
-      },
+      data: toPublicationCreateData(data),
     });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        return {
-          message: "Ya existe una publicación con ese slug.",
-          fieldErrors: { slug: ["El slug debe ser único."] },
-        };
-      }
+    return getPublicationMutationErrorState(error);
+  }
 
-      if (error.code === "P2003") {
-        return {
-          message:
-            "Una categoría, contributor o creador seleccionado ya no existe. Recarga la página.",
-        };
-      }
-    }
+  revalidatePublicationPaths(data.slug);
+  redirect("/admin/publicaciones");
+}
 
-    console.error("No se pudo crear la publicación", error);
+export async function updatePublication(
+  id: string,
+  _previousState: PublicationFormState,
+  formData: FormData,
+): Promise<PublicationFormState> {
+  const parsed = parsePublicationFormData(formData);
+
+  if (!parsed.success) {
     return {
-      message: "No se pudo crear la publicación. Inténtalo de nuevo.",
+      message: "Revisa los campos marcados antes de guardar.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
 
-  revalidatePath("/");
-  revalidatePath("/admin/publicaciones");
-  revalidatePath("/especiales");
-  revalidatePath("/resenas");
+  const data = parsed.data;
+
+  try {
+    const currentPublication = await prisma.publication.findUnique({
+      where: { id },
+      select: {
+        slug: true,
+        publishedAt: true,
+      },
+    });
+
+    if (!currentPublication) {
+      return {
+        message: "La publicación ya no existe. Recarga la página.",
+      };
+    }
+
+    await prisma.publication.update({
+      where: { id },
+      data: {
+        ...toPublicationWriteData(data),
+        ...(data.status === "PUBLISHED" && !currentPublication.publishedAt
+          ? { publishedAt: new Date() }
+          : {}),
+      },
+    });
+
+    revalidatePublicationPaths(currentPublication.slug);
+    revalidatePublicationPaths(data.slug);
+  } catch (error) {
+    return getPublicationMutationErrorState(error);
+  }
+
   redirect("/admin/publicaciones");
 }

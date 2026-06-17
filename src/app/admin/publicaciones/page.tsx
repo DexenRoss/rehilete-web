@@ -60,6 +60,7 @@ export default async function AdminPublicationsPage() {
                     <th className="px-5 py-4">Estado</th>
                     <th className="px-5 py-4">Categoría</th>
                     <th className="px-5 py-4">Creada</th>
+                    <th className="px-5 py-4">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -91,6 +92,14 @@ export default async function AdminPublicationsPage() {
                       </td>
                       <td className="px-5 py-4 text-sm text-[#555]">
                         {dateFormatter.format(publication.createdAt)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <Link
+                          href={`/admin/publicaciones/${publication.id}/editar`}
+                          className="inline-flex min-h-10 items-center rounded-lg bg-[#cf3e81] px-4 text-sm font-bold text-white transition hover:bg-[#b93473]"
+                        >
+                          Editar
+                        </Link>
                       </td>
                     </tr>
                   ))}

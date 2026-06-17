@@ -17,6 +17,13 @@ type PublicationFormProps = {
   categories: Option[];
   contributors: Option[];
   subjectCreators: Option[];
+  action?: (
+    state: PublicationFormState,
+    formData: FormData,
+  ) => Promise<PublicationFormState>;
+  initialValues?: PublicationFormValues;
+  submitLabel?: string;
+  pendingLabel?: string;
 };
 
 const initialState: PublicationFormState = { message: "" };
@@ -55,14 +62,59 @@ const reviewTierOptions = [
   },
 ];
 
+export type PublicationFormValues = {
+  kind: "REVIEW" | "SPECIAL";
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  title: string;
+  slug: string;
+  subtitle: string;
+  description: string;
+  body: string;
+  coverImageUrl: string;
+  coverImageAlt: string;
+  year: string;
+  rating: string;
+  reviewTier: "RECOMENDADO" | "FAVORITO" | "ESENCIAL" | "";
+  workType: string;
+  externalUrl: string;
+  categoryId: string;
+  reviewerId: string;
+  subjectCreatorId: string;
+};
+
+const defaultValues: PublicationFormValues = {
+  kind: "REVIEW",
+  status: "DRAFT",
+  title: "",
+  slug: "",
+  subtitle: "",
+  description: "",
+  body: "",
+  coverImageUrl: "",
+  coverImageAlt: "",
+  year: "",
+  rating: "",
+  reviewTier: "",
+  workType: "",
+  externalUrl: "",
+  categoryId: "",
+  reviewerId: "",
+  subjectCreatorId: "",
+};
+
 export function PublicationForm({
   categories,
   contributors,
   subjectCreators,
+  action = createPublication,
+  initialValues,
+  submitLabel = "Crear publicación",
+  pendingLabel = "Guardando...",
 }: PublicationFormProps) {
-  const [kind, setKind] = useState("REVIEW");
+  const values = { ...defaultValues, ...initialValues };
+  const [kind, setKind] = useState(values.kind);
   const [state, formAction, pending] = useActionState(
-    createPublication,
+    action,
     initialState,
   );
 
@@ -75,7 +127,9 @@ export function PublicationForm({
           <select
             name="kind"
             value={kind}
-            onChange={(event) => setKind(event.target.value)}
+            onChange={(event) =>
+              setKind(event.target.value as "REVIEW" | "SPECIAL")
+            }
             className={controlClassName}
           >
             <option value="REVIEW">Reseña</option>
@@ -84,9 +138,14 @@ export function PublicationForm({
         </Field>
 
         <Field label="Estado" required error={errorFor("status")}>
-          <select name="status" defaultValue="DRAFT" className={controlClassName}>
+          <select
+            name="status"
+            defaultValue={values.status}
+            className={controlClassName}
+          >
             <option value="DRAFT">Borrador</option>
             <option value="PUBLISHED">Publicada</option>
+            <option value="ARCHIVED">Archivada</option>
           </select>
         </Field>
       </div>
@@ -101,7 +160,7 @@ export function PublicationForm({
             <Field label="Puntaje" required error={errorFor("rating")}>
               <select
                 name="rating"
-                defaultValue=""
+                defaultValue={values.rating}
                 required={kind === "REVIEW"}
                 className={controlClassName}
               >
@@ -114,7 +173,10 @@ export function PublicationForm({
               </select>
             </Field>
 
-            <ReviewTierField error={errorFor("reviewTier")} />
+            <ReviewTierField
+              defaultValue={values.reviewTier}
+              error={errorFor("reviewTier")}
+            />
           </div>
         </div>
       )}
@@ -126,6 +188,7 @@ export function PublicationForm({
             required
             minLength={3}
             maxLength={180}
+            defaultValue={values.title}
             className={controlClassName}
           />
         </Field>
@@ -142,13 +205,19 @@ export function PublicationForm({
             minLength={3}
             maxLength={180}
             pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+            defaultValue={values.slug}
             className={controlClassName}
           />
         </Field>
       </div>
 
       <Field label="Subtítulo" error={errorFor("subtitle")}>
-        <input name="subtitle" maxLength={220} className={controlClassName} />
+        <input
+          name="subtitle"
+          maxLength={220}
+          defaultValue={values.subtitle}
+          className={controlClassName}
+        />
       </Field>
 
       <Field label="Descripción" error={errorFor("description")}>
@@ -156,12 +225,19 @@ export function PublicationForm({
           name="description"
           rows={3}
           maxLength={1000}
+          defaultValue={values.description}
           className={controlClassName}
         />
       </Field>
 
       <Field label="Contenido" required error={errorFor("body")}>
-        <textarea name="body" rows={12} required className={controlClassName} />
+        <textarea
+          name="body"
+          rows={12}
+          required
+          defaultValue={values.body}
+          className={controlClassName}
+        />
       </Field>
 
       <div className="grid gap-6 sm:grid-cols-2">
@@ -170,6 +246,7 @@ export function PublicationForm({
             name="coverImageUrl"
             type="url"
             placeholder="https://ejemplo.com/portada.jpg"
+            defaultValue={values.coverImageUrl}
             className={controlClassName}
           />
         </Field>
@@ -178,6 +255,7 @@ export function PublicationForm({
           <input
             name="coverImageAlt"
             maxLength={180}
+            defaultValue={values.coverImageAlt}
             className={controlClassName}
           />
         </Field>
@@ -190,12 +268,18 @@ export function PublicationForm({
             type="number"
             min={1000}
             max={2100}
+            defaultValue={values.year}
             className={controlClassName}
           />
         </Field>
 
         <Field label="Tipo de obra" error={errorFor("workType")}>
-          <input name="workType" maxLength={100} className={controlClassName} />
+          <input
+            name="workType"
+            maxLength={100}
+            defaultValue={values.workType}
+            className={controlClassName}
+          />
         </Field>
       </div>
 
@@ -204,6 +288,7 @@ export function PublicationForm({
           name="externalUrl"
           type="url"
           placeholder="https://ejemplo.com"
+          defaultValue={values.externalUrl}
           className={controlClassName}
         />
       </Field>
@@ -214,6 +299,7 @@ export function PublicationForm({
             name="categoryId"
             emptyLabel="Sin categoría"
             options={categories}
+            defaultValue={values.categoryId}
           />
         </Field>
 
@@ -222,6 +308,7 @@ export function PublicationForm({
             name="reviewerId"
             emptyLabel="Sin reviewer"
             options={contributors}
+            defaultValue={values.reviewerId}
           />
         </Field>
 
@@ -230,6 +317,7 @@ export function PublicationForm({
             name="subjectCreatorId"
             emptyLabel="Sin creador"
             options={subjectCreators}
+            defaultValue={values.subjectCreatorId}
           />
         </Field>
       </div>
@@ -249,14 +337,20 @@ export function PublicationForm({
           disabled={pending}
           className="min-h-12 rounded-xl bg-[#cf3e81] px-6 font-bold text-white transition hover:bg-[#b93473] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? "Guardando..." : "Crear publicación"}
+          {pending ? pendingLabel : submitLabel}
         </button>
       </div>
     </form>
   );
 }
 
-function ReviewTierField({ error }: { error?: string }) {
+function ReviewTierField({
+  defaultValue,
+  error,
+}: {
+  defaultValue: PublicationFormValues["reviewTier"];
+  error?: string;
+}) {
   return (
     <fieldset>
       <legend className="font-semibold">
@@ -274,6 +368,7 @@ function ReviewTierField({ error }: { error?: string }) {
               name="reviewTier"
               value={option.value}
               required
+              defaultChecked={defaultValue === option.value}
               className="sr-only"
             />
             <Image
@@ -297,13 +392,15 @@ function OptionSelect({
   name,
   emptyLabel,
   options,
+  defaultValue = "",
 }: {
   name: string;
   emptyLabel: string;
   options: Option[];
+  defaultValue?: string;
 }) {
   return (
-    <select name={name} defaultValue="" className={controlClassName}>
+    <select name={name} defaultValue={defaultValue} className={controlClassName}>
       <option value="">{emptyLabel}</option>
       {options.map((option) => (
         <option key={option.id} value={option.id}>
