@@ -27,6 +27,24 @@ const optionalHttpUrl = z
     }
   }, "Escribe una URL válida que empiece con http:// o https://.");
 
+const optionalImageSource = z
+  .string()
+  .trim()
+  .max(2048, "La ruta o URL es demasiado larga.")
+  .refine((value) => {
+    if (!value) return true;
+    if (/^\/images\/[^?#]+\.(png|jpe?g|webp|gif|avif|svg)$/i.test(value)) {
+      return true;
+    }
+
+    try {
+      const url = new URL(value);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, "Usa una ruta local /images/... o una URL válida que empiece con http:// o https://.");
+
 const optionalRelationId = z.string().trim().max(64);
 
 const publicationSchema = z.object({
@@ -53,7 +71,7 @@ const publicationSchema = z.object({
   subtitle: z.string().trim().max(220).default(""),
   description: z.string().trim().max(1000).default(""),
   body: z.string().trim().min(1, "El contenido es obligatorio."),
-  coverImageUrl: optionalHttpUrl,
+  coverImageUrl: optionalImageSource,
   coverImageAlt: z.string().trim().max(180).default(""),
   year: z
     .string()

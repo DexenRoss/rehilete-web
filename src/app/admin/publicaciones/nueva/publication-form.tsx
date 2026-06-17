@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useActionState, useState } from "react";
 
+import { CoverImagePreview } from "@/components/admin/cover-image-preview";
+
 import {
   createPublication,
   type PublicationFormState,
@@ -113,6 +115,8 @@ export function PublicationForm({
 }: PublicationFormProps) {
   const values = { ...defaultValues, ...initialValues };
   const [kind, setKind] = useState(values.kind);
+  const [coverImageUrl, setCoverImageUrl] = useState(values.coverImageUrl);
+  const [coverImageAlt, setCoverImageAlt] = useState(values.coverImageAlt);
   const [state, formAction, pending] = useActionState(
     action,
     initialState,
@@ -241,25 +245,37 @@ export function PublicationForm({
       </Field>
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <Field label="URL de portada" error={errorFor("coverImageUrl")}>
+        <Field
+          label="URL de portada"
+          hint="Puedes usar una ruta local como /images/rehilete/archivo.png o una URL externa https://..."
+          error={errorFor("coverImageUrl")}
+        >
           <input
             name="coverImageUrl"
-            type="url"
-            placeholder="https://ejemplo.com/portada.jpg"
-            defaultValue={values.coverImageUrl}
+            type="text"
+            placeholder="/images/rehilete/portada.png"
+            value={coverImageUrl}
+            onChange={(event) => setCoverImageUrl(event.target.value)}
             className={controlClassName}
           />
         </Field>
 
-        <Field label="Texto alternativo" error={errorFor("coverImageAlt")}>
+        <Field
+          label="Texto alternativo"
+          hint="Recomendado si agregas imagen de portada."
+          error={errorFor("coverImageAlt")}
+        >
           <input
             name="coverImageAlt"
             maxLength={180}
-            defaultValue={values.coverImageAlt}
+            value={coverImageAlt}
+            onChange={(event) => setCoverImageAlt(event.target.value)}
             className={controlClassName}
           />
         </Field>
       </div>
+
+      <CoverImagePreview imageUrl={coverImageUrl} imageAlt={coverImageAlt} />
 
       <div className="grid gap-6 sm:grid-cols-2">
         <Field label="Año" error={errorFor("year")}>
