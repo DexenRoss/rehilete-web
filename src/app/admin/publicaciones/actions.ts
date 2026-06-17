@@ -195,6 +195,9 @@ export async function createPublication(
     };
   }
 
+  revalidatePath("/");
   revalidatePath("/admin/publicaciones");
+  revalidatePath("/especiales");
+  revalidatePath("/resenas");
   redirect("/admin/publicaciones");
 }

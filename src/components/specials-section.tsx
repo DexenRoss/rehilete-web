@@ -1,7 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import type { SpecialCard } from "@/data/mock-landing";
+type SpecialCard = {
+  id: string;
+  title: string;
+  href: string;
+  imageSrc: string;
+  imageAlt: string;
+  bgClassName: string;
+  shapeClassName: string;
+  imageClassName: string;
+};
 
 type SpecialsSectionProps = {
   cards: SpecialCard[];
@@ -102,7 +111,7 @@ export function SpecialsSection({ cards }: SpecialsSectionProps) {
 
             <div className="flex justify-end">
               <Link
-                href="#"
+                href="/especiales"
                 className="inline-flex items-center rounded-[10px] bg-[#4b4f9e] px-5 py-3 text-[1.05rem] font-semibold text-white transition-transform duration-150 hover:-translate-y-0.5"
               >
                 + Especiales y Listas

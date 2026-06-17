@@ -31,9 +31,35 @@ export type PublicationCategoryShortcutView = {
   imageAlt: string;
 };
 
+export type PublicationSpecialCardView = {
+  id: string;
+  title: string;
+  slug: string;
+  href: string;
+  description: string;
+  imageSrc: string;
+  imageAlt: string;
+  bgClassName: string;
+  shapeClassName: string;
+  imageClassName: string;
+};
+
 export type PublicationReviewDetailView = PublicationCardView & {
   subtitle: string | null;
   body: string;
+  workType: string | null;
+  externalUrl: string | null;
+  reviewer: string | null;
+  subjectCreator: string | null;
+  tags: { id: string; name: string; slug: string }[];
+  publishedAt: Date | null;
+};
+
+export type PublicationSpecialDetailView = PublicationSpecialCardView & {
+  subtitle: string | null;
+  body: string;
+  year: number | null;
+  category: string | null;
   workType: string | null;
   externalUrl: string | null;
   reviewer: string | null;
@@ -81,6 +107,35 @@ const categoryAssets: Record<
   },
 };
 
+const specialCardStyles = [
+  {
+    bgClassName:
+      "bg-[linear-gradient(140deg,#eda04a_0%,#db8c37_100%)] text-white",
+    shapeClassName: "rounded-l-[36px] rounded-r-[108px]",
+    imageClassName: "w-[68%] max-w-[220px] -rotate-[14deg]",
+  },
+  {
+    bgClassName:
+      "bg-[linear-gradient(180deg,#c44c8c_0%,#c44c8c_52%,#b73f80_100%)] text-white",
+    shapeClassName:
+      "rounded-[36px] [clip-path:polygon(0_0,100%_0,100%_28%,88%_50%,100%_72%,100%_100%,0_100%,0_72%,12%_50%,0_28%)]",
+    imageClassName:
+      "w-[40%] max-w-[160px] drop-shadow-[0_14px_22px_rgba(0,0,0,0.28)]",
+  },
+  {
+    bgClassName:
+      "bg-[linear-gradient(180deg,#53559f_0%,#4a4b91_100%)] text-white",
+    shapeClassName: "rounded-t-[120px] rounded-b-[8px]",
+    imageClassName: "w-[44%] max-w-[150px]",
+  },
+  {
+    bgClassName:
+      "bg-[linear-gradient(180deg,#7dd5c0_0%,#6fc8b4_100%)] text-white",
+    shapeClassName: "rounded-[34px]",
+    imageClassName: "w-[44%] max-w-[150px] rotate-[10deg]",
+  },
+];
+
 const categorySlugMap: Record<string, string> = {
   "cine-series": "cine-series",
   "peliculas-series": "cine-series",
@@ -121,10 +176,18 @@ const publishedReviewWhere: Prisma.PublicationWhereInput = {
   status: "PUBLISHED",
 };
 
+const publishedSpecialWhere: Prisma.PublicationWhereInput = {
+  kind: "SPECIAL",
+  status: "PUBLISHED",
+};
+
 const publishedReviewOrderBy: Prisma.PublicationOrderByWithRelationInput[] = [
   { publishedAt: "desc" },
   { createdAt: "desc" },
 ];
+
+const publishedPublicationOrderBy: Prisma.PublicationOrderByWithRelationInput[] =
+  [{ publishedAt: "desc" }, { createdAt: "desc" }];
 
 const reviewTierMap = {
   RECOMENDADO: "recomendado",
@@ -201,6 +264,53 @@ function toPublicationReviewDetailView(
   };
 }
 
+function toPublicationSpecialCardView(
+  publication: PublishedReview,
+  index = 0,
+): PublicationSpecialCardView {
+  const style = specialCardStyles[index % specialCardStyles.length];
+  const categorySlug = publication.category?.slug ?? "";
+  const categoryAsset = categoryAssets[categorySlug];
+
+  return {
+    id: publication.id,
+    title: publication.title,
+    slug: publication.slug,
+    href: `/especiales/${publication.slug}`,
+    description: getExcerpt(publication.description, publication.body),
+    imageSrc:
+      publication.coverImageUrl?.trim() ||
+      categoryAsset?.imageSrc ||
+      "/images/rehilete/Literatura.png",
+    imageAlt:
+      publication.coverImageAlt?.trim() ||
+      `Imagen provisional de ${publication.title}`,
+    ...style,
+  };
+}
+
+function toPublicationSpecialDetailView(
+  publication: PublishedReviewDetail,
+): PublicationSpecialDetailView {
+  return {
+    ...toPublicationSpecialCardView(publication),
+    subtitle: publication.subtitle,
+    body: publication.body,
+    year: publication.year,
+    category: publication.category?.name ?? null,
+    workType: publication.workType,
+    externalUrl: publication.externalUrl,
+    reviewer: publication.reviewer?.name ?? null,
+    subjectCreator: publication.subjectCreator?.name ?? null,
+    tags: publication.tags.map(({ tag }) => ({
+      id: tag.id,
+      name: tag.name,
+      slug: tag.slug,
+    })),
+    publishedAt: publication.publishedAt,
+  };
+}
+
 export async function getLatestPublishedReviews(limit = 5) {
   const publications = await prisma.publication.findMany({
     where: publishedReviewWhere,
@@ -222,6 +332,29 @@ export async function getPublishedReviewBySlug(slug: string) {
   });
 
   return publication ? toPublicationReviewDetailView(publication) : null;
+}
+
+export async function getLatestPublishedSpecials(limit = 4) {
+  const publications = await prisma.publication.findMany({
+    where: publishedSpecialWhere,
+    include: publishedReviewInclude,
+    orderBy: publishedPublicationOrderBy,
+    take: limit,
+  });
+
+  return publications.map(toPublicationSpecialCardView);
+}
+
+export async function getPublishedSpecialBySlug(slug: string) {
+  const publication = await prisma.publication.findFirst({
+    where: {
+      ...publishedSpecialWhere,
+      slug,
+    },
+    include: publishedReviewDetailInclude,
+  });
+
+  return publication ? toPublicationSpecialDetailView(publication) : null;
 }
 
 export async function getPublishedReviewsByCategorySlug(categorySlug: string) {

@@ -6,7 +6,7 @@ import { reviewCategoryPages } from "@/data/review-categories";
 
 const navigation = [
   { label: "Inicio", href: "/" },
-  { label: "Especiales / Listas", href: "#destacado" },
+  { label: "Especiales / Listas", href: "/especiales" },
   { label: "Nosotros / Contacto", href: "#contacto" },
 ];
 

@@ -47,7 +47,7 @@ export function FeaturedReview({ post }: FeaturedReviewProps) {
           </span>
           <span className="inline-flex items-center gap-2 rounded-full bg-[#4d4f9b] px-4 py-2 text-sm font-bold text-white">
             <Star className="h-4 w-4 fill-current" />
-            {post.rating.toFixed(1)} / 5
+            {post.rating.toFixed(1)} / 10
           </span>
           <Link
             href={`/resenas/review/${post.slug}`}

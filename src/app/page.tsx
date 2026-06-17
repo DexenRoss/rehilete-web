@@ -14,6 +14,7 @@ import { featuredReview, reviewCategories, reviewPosts } from "@/data/mock-posts
 import {
   getFeaturedPublishedReview,
   getLatestPublishedReviews,
+  getLatestPublishedSpecials,
   getPublishedReviewCategories,
   type PublicationCardView,
 } from "@/lib/publications";
@@ -33,11 +34,16 @@ function toPublicationCardFallback(post: ReviewPost): PublicationCardView {
 }
 
 export default async function Home() {
-  const [latestPublishedReviews, featuredPublishedReview, publishedCategories] =
-    await Promise.all([
+  const [
+    latestPublishedReviews,
+    featuredPublishedReview,
+    publishedCategories,
+    latestPublishedSpecials,
+  ] = await Promise.all([
       getLatestPublishedReviews(),
       getFeaturedPublishedReview(),
       getPublishedReviewCategories(),
+      getLatestPublishedSpecials(),
     ]);
 
   const posts =
@@ -48,6 +54,8 @@ export default async function Home() {
     featuredPublishedReview ?? toPublicationCardFallback(featuredReview);
   const categories =
     publishedCategories.length > 0 ? publishedCategories : reviewCategories;
+  const specials =
+    latestPublishedSpecials.length > 0 ? latestPublishedSpecials : specialCards;
 
   return (
     <main className="min-h-screen bg-white">
@@ -57,7 +65,7 @@ export default async function Home() {
       <FeaturedReview post={featuredPost} />
       <ReviewsGrid posts={posts} />
       <EditorialBanner />
-      <SpecialsSection cards={specialCards} />
+      <SpecialsSection cards={specials} />
       <RockListBanner />
       <CategoryIconsRow items={landingCategoryIcons} />
       <SiteFooter />
