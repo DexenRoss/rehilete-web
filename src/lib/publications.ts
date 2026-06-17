@@ -31,6 +31,17 @@ export type PublicationCategoryShortcutView = {
   imageAlt: string;
 };
 
+export type PublicationReviewDetailView = PublicationCardView & {
+  subtitle: string | null;
+  body: string;
+  workType: string | null;
+  externalUrl: string | null;
+  reviewer: string | null;
+  subjectCreator: string | null;
+  tags: { id: string; name: string; slug: string }[];
+  publishedAt: Date | null;
+};
+
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20360%20520%22%20role%3D%22img%22%20aria-label%3D%22Rehilete%22%3E%3Crect%20width%3D%22360%22%20height%3D%22520%22%20rx%3D%2218%22%20fill%3D%22%23f4f1ec%22%2F%3E%3Ccircle%20cx%3D%22288%22%20cy%3D%22110%22%20r%3D%2282%22%20fill%3D%22%2361c8ab%22%20opacity%3D%22.55%22%2F%3E%3Ccircle%20cx%3D%2274%22%20cy%3D%22418%22%20r%3D%2298%22%20fill%3D%22%23cf3e81%22%20opacity%3D%22.25%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%22395%22%20fill%3D%22%23111111%22%20font-size%3D%2246%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-weight%3D%22700%22%3ERehilete%3C%2Ftext%3E%3Ctext%20x%3D%2234%22%20y%3D%22434%22%20fill%3D%22%23555555%22%20font-size%3D%2219%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%3EResena%3C%2Ftext%3E%3C%2Fsvg%3E";
 
@@ -88,6 +99,21 @@ const publishedReviewInclude = {
 
 type PublishedReview = Prisma.PublicationGetPayload<{
   include: typeof publishedReviewInclude;
+}>;
+
+const publishedReviewDetailInclude = {
+  category: true,
+  subjectCreator: true,
+  reviewer: true,
+  tags: {
+    include: {
+      tag: true,
+    },
+  },
+} as const;
+
+type PublishedReviewDetail = Prisma.PublicationGetPayload<{
+  include: typeof publishedReviewDetailInclude;
 }>;
 
 const publishedReviewWhere: Prisma.PublicationWhereInput = {
@@ -155,6 +181,26 @@ function toPublicationCardView(
   };
 }
 
+function toPublicationReviewDetailView(
+  publication: PublishedReviewDetail,
+): PublicationReviewDetailView {
+  return {
+    ...toPublicationCardView(publication),
+    subtitle: publication.subtitle,
+    body: publication.body,
+    workType: publication.workType,
+    externalUrl: publication.externalUrl,
+    reviewer: publication.reviewer?.name ?? null,
+    subjectCreator: publication.subjectCreator?.name ?? null,
+    tags: publication.tags.map(({ tag }) => ({
+      id: tag.id,
+      name: tag.name,
+      slug: tag.slug,
+    })),
+    publishedAt: publication.publishedAt,
+  };
+}
+
 export async function getLatestPublishedReviews(limit = 5) {
   const publications = await prisma.publication.findMany({
     where: publishedReviewWhere,
@@ -164,6 +210,18 @@ export async function getLatestPublishedReviews(limit = 5) {
   });
 
   return publications.map(toPublicationCardView);
+}
+
+export async function getPublishedReviewBySlug(slug: string) {
+  const publication = await prisma.publication.findFirst({
+    where: {
+      ...publishedReviewWhere,
+      slug,
+    },
+    include: publishedReviewDetailInclude,
+  });
+
+  return publication ? toPublicationReviewDetailView(publication) : null;
 }
 
 export async function getPublishedReviewsByCategorySlug(categorySlug: string) {

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Star } from "lucide-react";
 
 import type { PublicationCardView } from "@/lib/publications";
@@ -48,6 +49,12 @@ export function FeaturedReview({ post }: FeaturedReviewProps) {
             <Star className="h-4 w-4 fill-current" />
             {post.rating.toFixed(1)} / 5
           </span>
+          <Link
+            href={`/resenas/review/${post.slug}`}
+            className="inline-flex items-center rounded-full bg-[#61c8ab] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#57c2a5]"
+          >
+            Leer reseña
+          </Link>
         </div>
       </div>
     </section>

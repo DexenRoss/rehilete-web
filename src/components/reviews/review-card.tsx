@@ -47,7 +47,7 @@ export function ReviewCard({ post }: ReviewCardProps) {
 
       <div className="flex items-end lg:h-full">
         <Link
-          href={`#${post.slug}`}
+          href={`/resenas/review/${post.slug}`}
           className={`inline-flex min-h-[56px] items-center justify-center rounded-[10px] px-6 text-lg font-semibold text-white transition-colors ${actionToneClasses[post.actionTone]}`}
         >
           Ir a reseña →

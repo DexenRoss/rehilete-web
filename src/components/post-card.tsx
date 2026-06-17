@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Star } from "lucide-react";
 
 import type { PublicationCardView } from "@/lib/publications";
@@ -10,6 +11,7 @@ type PostCardProps = {
 export function PostCard({ post }: PostCardProps) {
   return (
     <article className="group">
+      <Link href={`/resenas/review/${post.slug}`} className="block">
       <div className="relative overflow-visible">
         <div className="overflow-hidden rounded-[4px] bg-[#f4f4f4] shadow-[0_10px_24px_rgba(0,0,0,0.10)] transition-transform duration-200 group-hover:-translate-y-1">
           <Image
@@ -34,6 +36,7 @@ export function PostCard({ post }: PostCardProps) {
         </h3>
         <p className="mt-1 text-sm font-medium text-[#555555]">{post.category}</p>
       </div>
+      </Link>
     </article>
   );
 }
