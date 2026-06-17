@@ -11,9 +11,14 @@ import {
   reviewCategoryPages,
 } from "@/data/review-categories";
 import {
-  latestReviewPosts,
   reviewCategoryShortcuts,
 } from "@/data/mock-posts";
+import {
+  getPublishedReviewCategoryShortcuts,
+  getPublishedReviewsByCategorySlug,
+} from "@/lib/publications";
+
+export const dynamic = "force-dynamic";
 
 type ReviewCategoryPageProps = {
   params: Promise<{ categoria: string }>;
@@ -44,16 +49,22 @@ export default async function ReviewCategoryPage({
 
   if (!category) notFound();
 
-  const posts = latestReviewPosts.filter((post) =>
-    category.postCategories.some((postCategory) => postCategory === post.category),
-  );
+  const [publishedPosts, publishedCategoryShortcuts] = await Promise.all([
+    getPublishedReviewsByCategorySlug(categoria),
+    getPublishedReviewCategoryShortcuts(),
+  ]);
+
+  const categories =
+    publishedCategoryShortcuts.length > 0
+      ? publishedCategoryShortcuts
+      : reviewCategoryShortcuts;
 
   return (
     <main className="min-h-screen bg-white">
       <SiteHeader />
       <ReviewsHero />
-      <ReviewsList posts={posts} title={category.pageTitle} />
-      <ReviewCategoryPills categories={reviewCategoryShortcuts} />
+      <ReviewsList posts={publishedPosts} title={category.pageTitle} />
+      <ReviewCategoryPills categories={categories} />
       <SiteFooter />
     </main>
   );

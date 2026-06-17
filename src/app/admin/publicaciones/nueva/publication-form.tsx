@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import Image from "next/image";
+import { useActionState, useState } from "react";
 
 import {
   createPublication,
@@ -23,11 +24,43 @@ const initialState: PublicationFormState = { message: "" };
 const controlClassName =
   "mt-2 w-full rounded-xl border border-[#bdbdbd] bg-white px-4 py-3 text-[#111] outline-none transition focus:border-[#cf3e81] focus:ring-4 focus:ring-[#cf3e81]/10";
 
+const ratingOptions = Array.from({ length: 21 }, (_, index) =>
+  (index / 2).toFixed(1),
+);
+
+const reviewTierOptions = [
+  {
+    value: "RECOMENDADO",
+    label: "Recomendado",
+    imageSrc: "/images/rehilete/Recomendado.png",
+    imageAlt: "Símbolo de recomendado",
+    width: 54,
+    height: 54,
+  },
+  {
+    value: "FAVORITO",
+    label: "Favorito",
+    imageSrc: "/images/rehilete/Favorito.png",
+    imageAlt: "Símbolo de favorito",
+    width: 82,
+    height: 42,
+  },
+  {
+    value: "ESENCIAL",
+    label: "Esencial",
+    imageSrc: "/images/rehilete/Esencial.png",
+    imageAlt: "Símbolo de esencial",
+    width: 116,
+    height: 40,
+  },
+];
+
 export function PublicationForm({
   categories,
   contributors,
   subjectCreators,
 }: PublicationFormProps) {
+  const [kind, setKind] = useState("REVIEW");
   const [state, formAction, pending] = useActionState(
     createPublication,
     initialState,
@@ -39,7 +72,12 @@ export function PublicationForm({
     <form action={formAction} className="space-y-7">
       <div className="grid gap-6 sm:grid-cols-2">
         <Field label="Tipo" required error={errorFor("kind")}>
-          <select name="kind" defaultValue="REVIEW" className={controlClassName}>
+          <select
+            name="kind"
+            value={kind}
+            onChange={(event) => setKind(event.target.value)}
+            className={controlClassName}
+          >
             <option value="REVIEW">Reseña</option>
             <option value="SPECIAL">Especial</option>
           </select>
@@ -52,6 +90,34 @@ export function PublicationForm({
           </select>
         </Field>
       </div>
+
+      {kind === "REVIEW" && (
+        <div className="rounded-2xl border border-[#ead6e1] bg-[#fff8fb] p-5">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#cf3e81]">
+            Datos de reseña
+          </p>
+
+          <div className="mt-5 grid gap-6 sm:grid-cols-[220px_1fr]">
+            <Field label="Puntaje" required error={errorFor("rating")}>
+              <select
+                name="rating"
+                defaultValue=""
+                required={kind === "REVIEW"}
+                className={controlClassName}
+              >
+                <option value="">Selecciona puntaje</option>
+                {ratingOptions.map((rating) => (
+                  <option key={rating} value={rating}>
+                    {rating}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <ReviewTierField error={errorFor("reviewTier")} />
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 sm:grid-cols-2">
         <Field label="Título" required error={errorFor("title")}>
@@ -187,6 +253,43 @@ export function PublicationForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function ReviewTierField({ error }: { error?: string }) {
+  return (
+    <fieldset>
+      <legend className="font-semibold">
+        Distintivo <span className="text-[#cf3e81]">*</span>
+      </legend>
+
+      <div className="mt-2 grid gap-3 sm:grid-cols-3">
+        {reviewTierOptions.map((option) => (
+          <label
+            key={option.value}
+            className="flex min-h-[118px] cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-[#d8c6d0] bg-white px-3 py-4 text-center font-bold transition has-checked:border-[#cf3e81] has-checked:bg-[#fde9f3] has-checked:ring-4 has-checked:ring-[#cf3e81]/10"
+          >
+            <input
+              type="radio"
+              name="reviewTier"
+              value={option.value}
+              required
+              className="sr-only"
+            />
+            <Image
+              src={option.imageSrc}
+              alt={option.imageAlt}
+              width={option.width}
+              height={option.height}
+              className="h-auto"
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+      </div>
+
+      {error && <span className="mt-1 block text-sm text-red-700">{error}</span>}
+    </fieldset>
   );
 }
 

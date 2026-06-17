@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import type { ReviewCategoryShortcut } from "@/data/mock-posts";
+import type { PublicationCategoryShortcutView } from "@/lib/publications";
 
 type ReviewCategoryPillsProps = {
-  categories: ReviewCategoryShortcut[];
+  categories: PublicationCategoryShortcutView[];
 };
 
 export function ReviewCategoryPills({

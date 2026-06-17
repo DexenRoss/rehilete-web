@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { Prisma, PublicationReviewTier } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -67,14 +67,51 @@ const publicationSchema = z.object({
       (value) => value === null || (value >= 1000 && value <= 2100),
       "El año debe estar entre 1000 y 2100.",
     ),
+  rating: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value === "" || /^\d(?:\.\d)?$|^10(?:\.0)?$/.test(value),
+      "El puntaje debe estar entre 0.0 y 10.0.",
+    )
+    .transform((value) => (value === "" ? null : Number(value)))
+    .refine(
+      (value) => value === null || (value >= 0 && value <= 10),
+      "El puntaje debe estar entre 0.0 y 10.0.",
+    ),
+  reviewTier: z.enum(["RECOMENDADO", "FAVORITO", "ESENCIAL", ""]).default(""),
   workType: z.string().trim().max(100).default(""),
   externalUrl: optionalHttpUrl,
   categoryId: optionalRelationId,
   reviewerId: optionalRelationId,
   subjectCreatorId: optionalRelationId,
+}).superRefine((data, ctx) => {
+  if (data.kind !== "REVIEW") return;
+
+  if (data.rating === null) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Selecciona un puntaje para la reseña.",
+      path: ["rating"],
+    });
+  }
+
+  if (!data.reviewTier) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Selecciona si es recomendada, favorita o esencial.",
+      path: ["reviewTier"],
+    });
+  }
 });
 
 const emptyToNull = (value: string) => value || null;
+
+const reviewTierByFormValue = {
+  RECOMENDADO: PublicationReviewTier.RECOMENDADO,
+  FAVORITO: PublicationReviewTier.FAVORITO,
+  ESENCIAL: PublicationReviewTier.ESENCIAL,
+} as const;
 
 export async function createPublication(
   _previousState: PublicationFormState,
@@ -91,6 +128,8 @@ export async function createPublication(
     coverImageUrl: formData.get("coverImageUrl"),
     coverImageAlt: formData.get("coverImageAlt"),
     year: formData.get("year"),
+    rating: formData.get("rating") ?? "",
+    reviewTier: formData.get("reviewTier") ?? "",
     workType: formData.get("workType"),
     externalUrl: formData.get("externalUrl"),
     categoryId: formData.get("categoryId"),
@@ -120,6 +159,11 @@ export async function createPublication(
         coverImageUrl: emptyToNull(data.coverImageUrl),
         coverImageAlt: emptyToNull(data.coverImageAlt),
         year: data.year,
+        rating: data.kind === "REVIEW" ? data.rating : null,
+        reviewTier:
+          data.kind === "REVIEW" && data.reviewTier
+            ? reviewTierByFormValue[data.reviewTier]
+            : null,
         workType: emptyToNull(data.workType),
         externalUrl: emptyToNull(data.externalUrl),
         categoryId: emptyToNull(data.categoryId),

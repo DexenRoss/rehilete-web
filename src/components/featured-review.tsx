@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { Star } from "lucide-react";
 
-import type { ReviewPost } from "@/data/mock-posts";
+import type { PublicationCardView } from "@/lib/publications";
 
 type FeaturedReviewProps = {
-  post: ReviewPost;
+  post: PublicationCardView;
 };
 
 export function FeaturedReview({ post }: FeaturedReviewProps) {

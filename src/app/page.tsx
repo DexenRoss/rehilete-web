@@ -9,16 +9,53 @@ import { SiteFooter } from "@/components/site-footer";
 import { SpecialsSection } from "@/components/specials-section";
 import { TaglineHero } from "@/components/tagline-hero";
 import { landingCategoryIcons, specialCards } from "@/data/mock-landing";
+import type { ReviewPost } from "@/data/mock-posts";
 import { featuredReview, reviewCategories, reviewPosts } from "@/data/mock-posts";
+import {
+  getFeaturedPublishedReview,
+  getLatestPublishedReviews,
+  getPublishedReviewCategories,
+  type PublicationCardView,
+} from "@/lib/publications";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+function toPublicationCardFallback(post: ReviewPost): PublicationCardView {
+  return {
+    ...post,
+    slug: post.id,
+    description: post.excerpt,
+    quote: `"${post.excerpt}"`,
+    imageAlt: `Portada provisional de ${post.title}`,
+    tier: "recomendado",
+    actionTone: "mint",
+  };
+}
+
+export default async function Home() {
+  const [latestPublishedReviews, featuredPublishedReview, publishedCategories] =
+    await Promise.all([
+      getLatestPublishedReviews(),
+      getFeaturedPublishedReview(),
+      getPublishedReviewCategories(),
+    ]);
+
+  const posts =
+    latestPublishedReviews.length > 0
+      ? latestPublishedReviews
+      : reviewPosts.map(toPublicationCardFallback);
+  const featuredPost =
+    featuredPublishedReview ?? toPublicationCardFallback(featuredReview);
+  const categories =
+    publishedCategories.length > 0 ? publishedCategories : reviewCategories;
+
   return (
     <main className="min-h-screen bg-white">
       <SiteHeader />
       <TaglineHero />
-      <CategoryPills categories={reviewCategories} />
-      <FeaturedReview post={featuredReview} />
-      <ReviewsGrid posts={reviewPosts} />
+      <CategoryPills categories={categories} />
+      <FeaturedReview post={featuredPost} />
+      <ReviewsGrid posts={posts} />
       <EditorialBanner />
       <SpecialsSection cards={specialCards} />
       <RockListBanner />

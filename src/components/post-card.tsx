@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { Star } from "lucide-react";
 
-import type { ReviewPost } from "@/data/mock-posts";
+import type { PublicationCardView } from "@/lib/publications";
 
 type PostCardProps = {
-  post: ReviewPost;
+  post: PublicationCardView;
 };
 
 export function PostCard({ post }: PostCardProps) {

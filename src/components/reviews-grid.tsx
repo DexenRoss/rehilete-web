@@ -1,11 +1,11 @@
 import Link from "next/link";
 
-import type { ReviewPost } from "@/data/mock-posts";
+import type { PublicationCardView } from "@/lib/publications";
 
 import { PostCard } from "./post-card";
 
 type ReviewsGridProps = {
-  posts: ReviewPost[];
+  posts: PublicationCardView[];
 };
 
 export function ReviewsGrid({ posts }: ReviewsGridProps) {

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import type { ReviewListPost } from "@/data/mock-posts";
+import type { PublicationCardView } from "@/lib/publications";
 
 import { RatingBadge } from "./rating-badge";
 
@@ -12,7 +12,7 @@ const actionToneClasses = {
 };
 
 type ReviewCardProps = {
-  post: ReviewListPost;
+  post: PublicationCardView;
 };
 
 export function ReviewCard({ post }: ReviewCardProps) {

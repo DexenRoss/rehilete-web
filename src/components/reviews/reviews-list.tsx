@@ -1,9 +1,9 @@
-import type { ReviewListPost } from "@/data/mock-posts";
+import type { PublicationCardView } from "@/lib/publications";
 
 import { ReviewCard } from "./review-card";
 
 type ReviewsListProps = {
-  posts: ReviewListPost[];
+  posts: PublicationCardView[];
   title?: string;
   emptyMessage?: string;
 };

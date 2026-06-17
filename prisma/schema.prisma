@@ -22,6 +22,12 @@ enum PublicationStatus {
   ARCHIVED
 }
 
+enum PublicationReviewTier {
+  RECOMENDADO
+  FAVORITO
+  ESENCIAL
+}
+
 model AdminUser {
   id                  String        @id @default(cuid())
   name                String
@@ -47,6 +53,8 @@ model Publication {
   coverImageUrl    String?
   coverImageAlt    String?
   year             Int?
+  rating           Float?
+  reviewTier       PublicationReviewTier?
   workType         String?
   externalUrl      String?
   categoryId       String?
