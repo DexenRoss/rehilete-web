@@ -73,6 +73,7 @@ const categoryAssets: Record<
 const categorySlugMap: Record<string, string> = {
   "cine-series": "cine-series",
   "peliculas-series": "cine-series",
+  cine: "cine-series",
   musica: "musica",
   literatura: "literatura",
   libros: "literatura",
@@ -230,10 +231,12 @@ export async function getPublishedReviewCategoryShortcuts() {
       imageAlt: `Icono de ${category.name}`,
     };
 
+    const hrefSlug = categorySlugMap[category.slug] ?? category.slug;
+
     shortcuts.set(category.id, {
       id: category.id,
       label: asset.label,
-      href: `/resenas/${category.slug}`,
+      href: `/resenas/${hrefSlug}`,
       imageSrc: asset.imageSrc,
       imageAlt: asset.imageAlt,
     });
