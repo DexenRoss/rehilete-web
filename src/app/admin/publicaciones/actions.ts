@@ -212,7 +212,7 @@ function parseSpecialItemsText(rawValue: FormDataEntryValue | null):
       position,
       reviewSlug,
       label: emptyToNull(label),
-      note: emptyToNull(note),
+      note: emptyToNull(note.replaceAll("\\n", "\n")),
     });
   }
 

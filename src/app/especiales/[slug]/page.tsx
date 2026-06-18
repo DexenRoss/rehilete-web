@@ -99,37 +99,38 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
           </div>
 
           {special.specialItems.length > 0 && (
-            <section className="mt-12 max-w-3xl border-t border-[#e5e5e5] pt-8">
-              <h2 className="text-2xl font-extrabold text-[#111111]">
+            <section className="mt-14 max-w-4xl border-t-4 border-[#111111] pt-8">
+              <h2 className="text-3xl font-extrabold leading-tight text-[#111111]">
                 Reseñas incluidas
               </h2>
 
-              <div className="mt-5 space-y-4">
+              <div className="mt-7 space-y-8">
                 {special.specialItems.map((item) => (
                   <article
                     key={item.id}
-                    className="grid gap-4 rounded-[8px] bg-[#f2f2f2] p-4 sm:grid-cols-[120px_1fr]"
+                    className="grid gap-5 border-b border-[#dedede] pb-8 last:border-b-0 last:pb-0 md:grid-cols-[190px_1fr] md:gap-7"
                   >
                     <Link
                       href={item.review.href}
-                      className="block overflow-hidden bg-white"
+                      className="block overflow-hidden rounded-[8px] bg-[#f2f2f2] transition-transform duration-150 hover:-translate-y-1"
                     >
                       <Image
                         src={item.review.imageSrc}
                         alt={item.review.imageAlt}
-                        width={240}
-                        height={348}
+                        width={420}
+                        height={609}
                         unoptimized
                         className="aspect-[0.69] h-auto w-full object-cover"
                       />
                     </Link>
 
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[#555555]">
-                        <span>{item.position}</span>
-                        {item.label && <span>{item.label}</span>}
+                    <div className="min-w-0 md:pt-1">
+                      <div className="flex flex-wrap items-center gap-2 text-sm font-bold uppercase tracking-[0.08em] text-[#555555]">
+                        <span className="text-2xl font-extrabold leading-none tracking-normal text-[#cf3e81]">
+                          {item.label || `${item.position}.`}
+                        </span>
                         {item.review.category && (
-                          <span className="rounded-full bg-white px-3 py-1">
+                          <span className="rounded-full bg-[#f3ede6] px-3 py-1 text-[#272727]">
                             {item.review.category}
                           </span>
                         )}
@@ -140,7 +141,7 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
                         )}
                       </div>
 
-                      <h3 className="mt-3 text-xl font-extrabold leading-tight">
+                      <h3 className="mt-4 text-2xl font-extrabold leading-tight sm:text-3xl">
                         <Link
                           href={item.review.href}
                           className="transition-colors hover:text-[#cf3e81]"
@@ -149,7 +150,7 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
                         </Link>
                       </h3>
 
-                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm font-semibold text-[#555555]">
+                      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-base font-semibold text-[#555555]">
                         {item.review.subjectCreator && (
                           <span>{item.review.subjectCreator}</span>
                         )}
@@ -157,10 +158,17 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
                       </div>
 
                       {item.note && (
-                        <p className="mt-3 text-base leading-7 text-[#333333]">
+                        <p className="mt-4 whitespace-pre-line text-[0.95rem] leading-[1.45] text-[#333333]">
                           {item.note}
                         </p>
                       )}
+
+                      <Link
+                        href={item.review.href}
+                        className="mt-4 inline-flex w-fit items-center rounded-[10px] bg-[#61c8ab] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_22px_rgba(97,200,171,0.28)] transition hover:-translate-y-0.5 hover:bg-[#4fb89b]"
+                      >
+                        Leer reseña
+                      </Link>
                     </div>
                   </article>
                 ))}

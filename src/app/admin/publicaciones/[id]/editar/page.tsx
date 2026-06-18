@@ -95,7 +95,7 @@ export default async function EditAdminPublicationPage({
           item.position,
           item.review.slug,
           item.label ?? "",
-          item.note ?? "",
+          item.note?.replaceAll("\n", "\\n") ?? "",
         ].join(" | "),
       )
       .join("\n"),

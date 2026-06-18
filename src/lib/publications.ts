@@ -36,6 +36,8 @@ export type PublicationSpecialCardView = {
   title: string;
   slug: string;
   href: string;
+  coverImageUrl: string | null;
+  coverImageAlt: string;
   specialFormat: SpecialFormat | null;
   specialFormatLabel: string | null;
   description: string;
@@ -330,24 +332,26 @@ function toPublicationSpecialCardView(
   const style = specialCardStyles[index % specialCardStyles.length];
   const categorySlug = publication.category?.slug ?? "";
   const categoryAsset = categoryAssets[categorySlug];
+  const coverImageUrl = publication.coverImageUrl?.trim() || null;
+  const coverImageAlt =
+    publication.coverImageAlt?.trim() ||
+    `Imagen provisional de ${publication.title}`;
 
   return {
     id: publication.id,
     title: publication.title,
     slug: publication.slug,
     href: `/especiales/${publication.slug}`,
+    coverImageUrl,
+    coverImageAlt,
     specialFormat: publication.specialFormat,
     specialFormatLabel: publication.specialFormat
       ? specialFormatLabelMap[publication.specialFormat]
       : null,
     description: getExcerpt(publication.description, publication.body),
     imageSrc:
-      publication.coverImageUrl?.trim() ||
-      categoryAsset?.imageSrc ||
-      "/images/rehilete/Literatura.png",
-    imageAlt:
-      publication.coverImageAlt?.trim() ||
-      `Imagen provisional de ${publication.title}`,
+      coverImageUrl || categoryAsset?.imageSrc || "/images/rehilete/Literatura.png",
+    imageAlt: coverImageAlt,
     ...style,
   };
 }

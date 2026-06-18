@@ -1,8 +1,6 @@
-import Image from "next/image";
-import Link from "next/link";
-
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { SpecialImageCard } from "@/components/specials/special-image-card";
 import { getLatestPublishedSpecials } from "@/lib/publications";
 
 export const dynamic = "force-dynamic";
@@ -27,30 +25,13 @@ export default async function EspecialesPage() {
         {specials.length > 0 ? (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {specials.map((special) => (
-              <Link
+              <SpecialImageCard
                 key={special.id}
                 href={special.href}
-                className="group block overflow-hidden rounded-[8px] bg-[#f2f2f2] transition-transform duration-150 hover:-translate-y-1"
-              >
-                <div className="flex aspect-[1.18] items-center justify-center bg-[#61c8ab]/15 px-8">
-                  <Image
-                    src={special.imageSrc}
-                    alt={special.imageAlt}
-                    width={720}
-                    height={720}
-                    unoptimized
-                    className="max-h-[72%] w-auto max-w-[72%] object-contain transition-transform duration-150 group-hover:scale-[1.03]"
-                  />
-                </div>
-                <div className="p-5">
-                  <h2 className="text-xl font-extrabold leading-tight">
-                    {special.title}
-                  </h2>
-                  <p className="mt-3 text-sm leading-6 text-[#555555]">
-                    {special.description}
-                  </p>
-                </div>
-              </Link>
+                title={special.title}
+                coverImageUrl={special.coverImageUrl}
+                coverImageAlt={special.coverImageAlt}
+              />
             ))}
           </div>
         ) : (

@@ -262,17 +262,22 @@ export function PublicationForm({
             <div className="mt-5">
               <Field
                 label="Items"
-                hint="Una línea por reseña: position | review-slug | label opcional | note opcional"
+                hint="Una línea por reseña: position | review-slug | label opcional | note editorial. Usa \\n dentro de la note si necesitas saltos de línea."
                 error={errorFor("specialItemsText")}
               >
                 <textarea
                   name="specialItemsText"
                   rows={8}
                   defaultValue={values.specialItemsText}
-                  placeholder={"1 | album-uno | #1 | Texto opcional\n2 | album-dos | #2 | Texto opcional"}
+                  placeholder={"1 | album-uno | #1 | Texto editorial para este lugar en la lista\n2 | album-dos | #2 | Primer párrafo breve\\nSegundo párrafo breve"}
                   className={controlClassName}
                 />
               </Field>
+              <p className="mt-2 text-sm leading-6 text-[#666]">
+                El contenido principal del especial va en Contenido. La note de
+                cada item es el comentario breve que aparecerá junto a esa
+                reseña dentro del especial.
+              </p>
             </div>
           </div>
         )}
