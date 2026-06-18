@@ -1,12 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
 
 import type { PublicationCardView } from "@/lib/publications";
+
+import { RatingBadge } from "./reviews/rating-badge";
 
 type FeaturedReviewProps = {
   post: PublicationCardView;
 };
+
+const tierLabel = {
+  recomendado: "Recomendado",
+  favorito: "Favorito",
+  esencial: "Esencial",
+} as const;
 
 export function FeaturedReview({ post }: FeaturedReviewProps) {
   return (
@@ -45,10 +52,12 @@ export function FeaturedReview({ post }: FeaturedReviewProps) {
           <span className="rounded-full bg-[#f3ede6] px-4 py-2 text-sm font-semibold text-[#272727]">
             {post.category}
           </span>
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#4d4f9b] px-4 py-2 text-sm font-bold text-white">
-            <Star className="h-4 w-4 fill-current" />
-            {post.rating.toFixed(1)} / 10
-          </span>
+          {post.tier && (
+            <span className="inline-flex items-center gap-3 rounded-full bg-[#f7f7f7] px-4 py-2 text-sm font-bold">
+              <RatingBadge tier={post.tier} />
+              {tierLabel[post.tier]}
+            </span>
+          )}
           <Link
             href={`/resenas/review/${post.slug}`}
             className="inline-flex items-center rounded-full bg-[#61c8ab] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#57c2a5]"

@@ -20,7 +20,7 @@ export default async function EditAdminPublicationPage({
 }: EditAdminPublicationPageProps) {
   const { id } = await params;
 
-  const [publication, categories, contributors, subjectCreators] =
+  const [publication, categories, contributors] =
     await Promise.all([
       prisma.publication.findUnique({
         where: { id },
@@ -36,14 +36,20 @@ export default async function EditAdminPublicationPage({
           coverImageUrl: true,
           coverImageAlt: true,
           year: true,
-          rating: true,
           reviewTier: true,
           specialFormat: true,
           workType: true,
+          subjectCreatorName: true,
+          artistName: true,
+          albumName: true,
+          producerName: true,
+          bookAuthorName: true,
+          publisherName: true,
+          developerName: true,
+          platforms: true,
           externalUrl: true,
           categoryId: true,
           reviewerId: true,
-          subjectCreatorId: true,
           specialItems: {
             orderBy: { position: "asc" },
             select: {
@@ -61,13 +67,9 @@ export default async function EditAdminPublicationPage({
       }),
       prisma.category.findMany({
         orderBy: { name: "asc" },
-        select: { id: true, name: true },
+        select: { id: true, name: true, slug: true },
       }),
       prisma.contributor.findMany({
-        orderBy: { name: "asc" },
-        select: { id: true, name: true },
-      }),
-      prisma.subjectCreator.findMany({
         orderBy: { name: "asc" },
         select: { id: true, name: true },
       }),
@@ -86,7 +88,6 @@ export default async function EditAdminPublicationPage({
     coverImageUrl: publication.coverImageUrl ?? "",
     coverImageAlt: publication.coverImageAlt ?? "",
     year: publication.year?.toString() ?? "",
-    rating: publication.rating?.toFixed(1) ?? "",
     reviewTier: publication.reviewTier ?? "",
     specialFormat: publication.specialFormat ?? "",
     specialItemsText: publication.specialItems
@@ -100,10 +101,17 @@ export default async function EditAdminPublicationPage({
       )
       .join("\n"),
     workType: publication.workType ?? "",
+    subjectCreatorName: publication.subjectCreatorName ?? "",
+    artistName: publication.artistName ?? "",
+    albumName: publication.albumName ?? "",
+    producerName: publication.producerName ?? "",
+    bookAuthorName: publication.bookAuthorName ?? "",
+    publisherName: publication.publisherName ?? "",
+    developerName: publication.developerName ?? "",
+    platforms: publication.platforms ?? "",
     externalUrl: publication.externalUrl ?? "",
     categoryId: publication.categoryId ?? "",
     reviewerId: publication.reviewerId ?? "",
-    subjectCreatorId: publication.subjectCreatorId ?? "",
   };
 
   const updatePublicationWithId = updatePublication.bind(null, publication.id);
@@ -135,7 +143,6 @@ export default async function EditAdminPublicationPage({
             action={updatePublicationWithId}
             categories={categories}
             contributors={contributors}
-            subjectCreators={subjectCreators}
             initialValues={initialValues}
             showSpecialItemsEditor
             submitLabel="Guardar cambios"

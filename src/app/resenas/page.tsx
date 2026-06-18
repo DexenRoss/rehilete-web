@@ -21,7 +21,6 @@ function toPublicationCardFallback(post: ReviewListPost): PublicationCardView {
     ...post,
     excerpt: post.quote.replace(/^"|"$/g, ""),
     description: post.quote.replace(/^"|"$/g, ""),
-    rating: 4.5,
   };
 }
 

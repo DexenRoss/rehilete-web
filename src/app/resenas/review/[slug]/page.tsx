@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Star } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { RatingBadge } from "@/components/reviews/rating-badge";
@@ -20,6 +20,68 @@ const tierLabel = {
   favorito: "Favorito",
   esencial: "Esencial",
 } as const;
+
+type Fact = {
+  label: string;
+  value: string | null;
+};
+
+function getReviewCategoryGroup(categorySlug: string | null) {
+  const value = categorySlug ?? "";
+
+  if (value.includes("musica")) return "music";
+  if (value.includes("cine") || value.includes("series")) return "film";
+  if (value.includes("literatura") || value.includes("libros")) {
+    return "literature";
+  }
+  if (value.includes("videojuegos") || value.includes("juegos")) {
+    return "games";
+  }
+
+  return null;
+}
+
+function getReviewFacts(review: NonNullable<Awaited<ReturnType<typeof getPublishedReviewBySlug>>>) {
+  const group = getReviewCategoryGroup(review.categorySlug);
+  const facts: Fact[] = [];
+
+  if (review.subjectCreatorName) {
+    facts.push({
+      label: "Creador de la obra",
+      value: review.subjectCreatorName,
+    });
+  }
+
+  if (group === "music") {
+    facts.push(
+      { label: "Artista", value: review.artistName },
+      { label: "Álbum / Disco", value: review.albumName },
+      { label: "Productora", value: review.producerName },
+    );
+  }
+
+  if (group === "film") {
+    facts.push({ label: "Productora", value: review.producerName });
+  }
+
+  if (group === "literature") {
+    facts.push(
+      { label: "Autor", value: review.bookAuthorName },
+      { label: "Editorial", value: review.publisherName },
+    );
+  }
+
+  if (group === "games") {
+    facts.push(
+      { label: "Casa de desarrollo", value: review.developerName },
+      { label: "Plataformas", value: review.platforms },
+    );
+  }
+
+  return facts.filter((fact): fact is { label: string; value: string } =>
+    Boolean(fact.value),
+  );
+}
 
 export async function generateMetadata({
   params,
@@ -40,6 +102,8 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   const review = await getPublishedReviewBySlug(slug);
 
   if (!review) notFound();
+
+  const reviewFacts = getReviewFacts(review);
 
   return (
     <main className="min-h-screen bg-white text-[#111111]">
@@ -83,21 +147,41 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
           )}
 
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 text-base font-semibold text-[#555555]">
-            {review.subjectCreator && <span>{review.subjectCreator}</span>}
+            {review.subjectCreatorName && (
+              <span>{review.subjectCreatorName}</span>
+            )}
             <span>{review.year}</span>
             {review.reviewer && <span>Por {review.reviewer}</span>}
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-4">
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#4d4f9b] px-4 py-2 text-sm font-bold text-white">
-              <Star className="h-4 w-4 fill-current" />
-              {review.rating.toFixed(1)} / 10
-            </span>
-            <span className="inline-flex items-center gap-3 rounded-full bg-[#f7f7f7] px-4 py-2 text-sm font-bold">
-              <RatingBadge tier={review.tier} />
-              {tierLabel[review.tier]}
-            </span>
-          </div>
+          {review.tier && (
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+              <span className="inline-flex items-center gap-3 rounded-full bg-[#f7f7f7] px-4 py-2 text-sm font-bold">
+                <RatingBadge tier={review.tier} />
+                {tierLabel[review.tier]}
+              </span>
+            </div>
+          )}
+
+          {reviewFacts.length > 0 && (
+            <section className="mt-7 max-w-3xl rounded-[8px] border border-[#dedede] bg-[#fafafa] p-5">
+              <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-[#555555]">
+                Ficha técnica
+              </h2>
+              <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+                {reviewFacts.map((fact) => (
+                  <div key={fact.label}>
+                    <dt className="text-xs font-bold uppercase tracking-[0.12em] text-[#777777]">
+                      {fact.label}
+                    </dt>
+                    <dd className="mt-1 text-base font-semibold text-[#222222]">
+                      {fact.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
 
           {review.description && (
             <p className="mt-8 max-w-3xl text-xl leading-9 text-[#333333]">

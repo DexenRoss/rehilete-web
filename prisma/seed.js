@@ -38,17 +38,6 @@ const contributors = [
   },
 ];
 
-const subjectCreators = [
-  {
-    name: "Jalil Mosso Castrejón",
-    slug: "jalil-mosso-castrejon",
-  },
-  {
-    name: "H.G. Santarriaga",
-    slug: "hg-santarriaga",
-  },
-];
-
 const tags = [
   {
     name: "Música mexicana",
@@ -86,16 +75,6 @@ async function main() {
         name: contributor.name,
       },
       create: contributor,
-    });
-  }
-
-  for (const subjectCreator of subjectCreators) {
-    await prisma.subjectCreator.upsert({
-      where: { slug: subjectCreator.slug },
-      update: {
-        name: subjectCreator.name,
-      },
-      create: subjectCreator,
     });
   }
 

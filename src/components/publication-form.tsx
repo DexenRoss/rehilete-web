@@ -5,7 +5,7 @@ import { BookOpenText, FilePenLine, Save } from "lucide-react";
 import { createPublication, type PublicationFormState } from "@/app/publicaciones/nueva/actions";
 
 type Option = { id: string; name: string };
-type Props = { categories: Option[]; contributors: Option[]; subjectCreators: Option[]; tags: Option[] };
+type Props = { categories: Option[]; contributors: Option[]; tags: Option[] };
 const initialState: PublicationFormState = { status: "idle", message: "" };
 const control = "mt-2 w-full rounded-[12px] border border-[#c9c9c9] bg-white px-4 py-3 outline-none transition focus:border-[#cf3e81] focus:ring-4 focus:ring-[#cf3e81]/10";
 
@@ -23,7 +23,7 @@ export function PublicationForm(props: Props) {
     <Field label="Descripción breve" hint="Se usará como resumen editorial."><textarea name="description" rows={3} maxLength={500} className={control} /></Field>
     <Field label="Contenido" required hint="Texto completo de la publicación." error={error("body")}><textarea name="body" rows={12} required className={control} /></Field>
     <div className="grid gap-6 md:grid-cols-2"><Field label="Categoría"><Select name="categoryId" empty="Sin categoría" options={props.categories} /></Field><Field label="Estado"><select name="status" defaultValue="DRAFT" className={control}><option value="DRAFT">Guardar como borrador</option><option value="PUBLISHED">Publicar ahora</option></select></Field><Field label="Año" error={error("year")}><input name="year" type="number" min="1000" max="2100" className={control} /></Field><Field label="Tipo de obra"><input name="workType" placeholder="Álbum, película, libro..." maxLength={80} className={control} /></Field></div>
-    {kind === "REVIEW" && <div className="grid gap-6 rounded-[16px] bg-[#f3f3f3] p-5 md:grid-cols-2"><Field label="Autor de la reseña"><Select name="reviewerId" empty="Sin autor asignado" options={props.contributors} /></Field><Field label="Creador de la obra"><Select name="subjectCreatorId" empty="Sin creador asignado" options={props.subjectCreators} /></Field></div>}
+    {kind === "REVIEW" && <div className="grid gap-6 rounded-[16px] bg-[#f3f3f3] p-5 md:grid-cols-2"><Field label="Autor de la reseña"><Select name="reviewerId" empty="Sin autor asignado" options={props.contributors} /></Field><Field label="Creador de la obra"><input name="subjectCreatorName" maxLength={180} className={control} /></Field></div>}
     <div className="grid gap-6 md:grid-cols-2"><Field label="URL de portada" hint="Dirección pública de la imagen." error={error("coverImageUrl")}><input name="coverImageUrl" type="url" placeholder="https://..." className={control} /></Field><Field label="Texto alternativo"><input name="coverImageAlt" maxLength={180} className={control} /></Field><Field label="Enlace externo" error={error("externalUrl")}><input name="externalUrl" type="url" placeholder="https://..." className={control} /></Field></div>
     {props.tags.length > 0 && <fieldset><legend className="font-extrabold">Etiquetas</legend><div className="mt-3 flex flex-wrap gap-3">{props.tags.map((tag) => <label key={tag.id} className="cursor-pointer rounded-full border border-[#bbb] px-4 py-2 text-sm has-[:checked]:border-black has-[:checked]:bg-black has-[:checked]:text-white"><input className="sr-only" type="checkbox" name="tagIds" value={tag.id} />{tag.name}</label>)}</div></fieldset>}
     {state.message && <p role="status" className={`rounded-[12px] px-4 py-3 font-semibold ${state.status === "success" ? "bg-[#63d0b2]/20 text-[#17634f]" : "bg-red-50 text-red-700"}`}>{state.message}</p>}

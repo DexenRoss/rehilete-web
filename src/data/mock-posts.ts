@@ -38,9 +38,11 @@ export type ReviewPost = {
   creator: string;
   year: number;
   category: string;
-  rating: number;
   excerpt: string;
   imageSrc: string;
+  imageAlt: string;
+  tier: ReviewTier;
+  actionTone: "mint" | "orange" | "magenta";
 };
 
 export type ReviewTier = "recomendado" | "favorito" | "esencial";
@@ -81,7 +83,6 @@ export const featuredReview: ReviewPost = {
   creator: "Silvana Estrada",
   year: 2022,
   category: "Musica",
-  rating: 4.9,
   excerpt:
     "Una reseña destacada sobre intimidad, melancolia y una produccion que convierte el silencio en textura.",
   imageSrc: createPoster({
@@ -91,6 +92,9 @@ export const featuredReview: ReviewPost = {
     to: "#8d8d8d",
     text: "#1a1a1a",
   }),
+  imageAlt: "Portada provisional de Marchita",
+  tier: "favorito",
+  actionTone: "mint",
 };
 
 export const reviewPosts: ReviewPost[] = [
@@ -100,7 +104,6 @@ export const reviewPosts: ReviewPost[] = [
     creator: "Rigoberto Castañeda",
     year: 2006,
     category: "Cine",
-    rating: 4.7,
     excerpt:
       "Terror mexicano de atmosfera helada con una puesta en escena sobria y un pulso muy efectivo.",
     imageSrc: createPoster({
@@ -109,6 +112,9 @@ export const reviewPosts: ReviewPost[] = [
       from: "#101d2d",
       to: "#4b6f91",
     }),
+    imageAlt: "Portada provisional de Km 31",
+    tier: "recomendado",
+    actionTone: "mint",
   },
   {
     id: "lodo",
@@ -116,7 +122,6 @@ export const reviewPosts: ReviewPost[] = [
     creator: "H.G. Santarriaga",
     year: 2025,
     category: "Libros",
-    rating: 4.6,
     excerpt:
       "Una portada abrasiva para una lectura que muerde desde el primer parrafo.",
     imageSrc: createPoster({
@@ -125,6 +130,9 @@ export const reviewPosts: ReviewPost[] = [
       from: "#6b0912",
       to: "#ff7b00",
     }),
+    imageAlt: "Portada provisional de Lodo",
+    tier: "recomendado",
+    actionTone: "orange",
   },
   featuredReview,
   {
@@ -133,7 +141,6 @@ export const reviewPosts: ReviewPost[] = [
     creator: "Roberto Sneider",
     year: 2008,
     category: "Cine",
-    rating: 4.8,
     excerpt:
       "Melodrama politico con una lectura visual elegante y actuaciones de gran presencia.",
     imageSrc: createPoster({
@@ -142,6 +149,9 @@ export const reviewPosts: ReviewPost[] = [
       from: "#5b4324",
       to: "#c8a15d",
     }),
+    imageAlt: "Portada provisional de Arrancame la Vida",
+    tier: "favorito",
+    actionTone: "magenta",
   },
   {
     id: "el-fuego-verde",
@@ -149,7 +159,6 @@ export const reviewPosts: ReviewPost[] = [
     creator: "Veronica Murguia",
     year: 1999,
     category: "Libros",
-    rating: 4.8,
     excerpt:
       "Fantasia luminosa con imaginacion vegetal y un universo que permanece mucho despues de cerrar el libro.",
     imageSrc: createPoster({
@@ -158,6 +167,9 @@ export const reviewPosts: ReviewPost[] = [
       from: "#0f5a42",
       to: "#7ed957",
     }),
+    imageAlt: "Portada provisional de El Fuego Verde",
+    tier: "recomendado",
+    actionTone: "mint",
   },
 ];
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 
+import { RatingBadge } from "@/components/reviews/rating-badge";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getPublishedSpecialBySlug } from "@/lib/publications";
@@ -83,7 +84,9 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
           )}
 
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 text-base font-semibold text-[#555555]">
-            {special.subjectCreator && <span>{special.subjectCreator}</span>}
+            {special.subjectCreatorName && (
+              <span>{special.subjectCreatorName}</span>
+            )}
             {special.year && <span>{special.year}</span>}
             {special.reviewer && <span>Por {special.reviewer}</span>}
           </div>
@@ -134,9 +137,9 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
                             {item.review.category}
                           </span>
                         )}
-                        {item.review.rating !== null && (
-                          <span className="rounded-full bg-[#cf3e81] px-3 py-1 text-white">
-                            {item.review.rating.toFixed(1)}
+                        {item.review.tier && (
+                          <span className="inline-flex items-center rounded-full bg-white px-2 py-1">
+                            <RatingBadge tier={item.review.tier} />
                           </span>
                         )}
                       </div>
@@ -151,8 +154,8 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
                       </h3>
 
                       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-base font-semibold text-[#555555]">
-                        {item.review.subjectCreator && (
-                          <span>{item.review.subjectCreator}</span>
+                        {item.review.subjectCreatorName && (
+                          <span>{item.review.subjectCreatorName}</span>
                         )}
                         {item.review.year && <span>{item.review.year}</span>}
                       </div>

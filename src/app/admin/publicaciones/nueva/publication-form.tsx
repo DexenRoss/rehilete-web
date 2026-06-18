@@ -13,12 +13,12 @@ import {
 type Option = {
   id: string;
   name: string;
+  slug?: string;
 };
 
 type PublicationFormProps = {
   categories: Option[];
   contributors: Option[];
-  subjectCreators: Option[];
   action?: (
     state: PublicationFormState,
     formData: FormData,
@@ -33,10 +33,6 @@ const initialState: PublicationFormState = { message: "" };
 
 const controlClassName =
   "mt-2 w-full rounded-xl border border-[#bdbdbd] bg-white px-4 py-3 text-[#111] outline-none transition focus:border-[#cf3e81] focus:ring-4 focus:ring-[#cf3e81]/10";
-
-const ratingOptions = Array.from({ length: 21 }, (_, index) =>
-  (index / 2).toFixed(1),
-);
 
 const reviewTierOptions = [
   {
@@ -95,15 +91,21 @@ export type PublicationFormValues = {
   coverImageUrl: string;
   coverImageAlt: string;
   year: string;
-  rating: string;
   reviewTier: "RECOMENDADO" | "FAVORITO" | "ESENCIAL" | "";
   specialFormat: "ARTICLE" | "LIST" | "COLLECTION" | "FEATURE" | "";
   specialItemsText: string;
   workType: string;
+  subjectCreatorName: string;
+  artistName: string;
+  albumName: string;
+  producerName: string;
+  bookAuthorName: string;
+  publisherName: string;
+  developerName: string;
+  platforms: string;
   externalUrl: string;
   categoryId: string;
   reviewerId: string;
-  subjectCreatorId: string;
 };
 
 type SpecialFormatFormValue = Exclude<
@@ -122,21 +124,58 @@ const defaultValues: PublicationFormValues = {
   coverImageUrl: "",
   coverImageAlt: "",
   year: "",
-  rating: "",
   reviewTier: "",
   specialFormat: "",
   specialItemsText: "",
   workType: "",
+  subjectCreatorName: "",
+  artistName: "",
+  albumName: "",
+  producerName: "",
+  bookAuthorName: "",
+  publisherName: "",
+  developerName: "",
+  platforms: "",
   externalUrl: "",
   categoryId: "",
   reviewerId: "",
-  subjectCreatorId: "",
 };
+
+type ReviewMetadataGroup = "music" | "film" | "literature" | "games" | null;
+
+function normalizeCategoryValue(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function getReviewMetadataGroup(option?: Option): ReviewMetadataGroup {
+  if (!option) return null;
+
+  const value = normalizeCategoryValue(`${option.slug ?? ""} ${option.name}`);
+
+  if (value.includes("musica")) return "music";
+  if (
+    value.includes("cine") ||
+    value.includes("series") ||
+    value.includes("peliculas")
+  ) {
+    return "film";
+  }
+  if (value.includes("literatura") || value.includes("libros")) {
+    return "literature";
+  }
+  if (value.includes("videojuegos") || value.includes("juegos")) {
+    return "games";
+  }
+
+  return null;
+}
 
 export function PublicationForm({
   categories,
   contributors,
-  subjectCreators,
   action = createPublication,
   initialValues,
   showSpecialItemsEditor = false,
@@ -148,14 +187,29 @@ export function PublicationForm({
   const [specialFormat, setSpecialFormat] = useState<SpecialFormatFormValue>(
     values.specialFormat || "ARTICLE",
   );
+  const [categoryId, setCategoryId] = useState(values.categoryId);
   const [coverImageUrl, setCoverImageUrl] = useState(values.coverImageUrl);
   const [coverImageAlt, setCoverImageAlt] = useState(values.coverImageAlt);
+  const [subjectCreatorName, setSubjectCreatorName] = useState(
+    values.subjectCreatorName,
+  );
+  const [artistName, setArtistName] = useState(values.artistName);
+  const [albumName, setAlbumName] = useState(values.albumName);
+  const [producerName, setProducerName] = useState(values.producerName);
+  const [bookAuthorName, setBookAuthorName] = useState(values.bookAuthorName);
+  const [publisherName, setPublisherName] = useState(values.publisherName);
+  const [developerName, setDeveloperName] = useState(values.developerName);
+  const [platforms, setPlatforms] = useState(values.platforms);
   const [state, formAction, pending] = useActionState(
     action,
     initialState,
   );
 
   const errorFor = (field: string) => state.fieldErrors?.[field]?.[0];
+  const selectedCategory = categories.find(
+    (category) => category.id === categoryId,
+  );
+  const reviewMetadataGroup = getReviewMetadataGroup(selectedCategory);
 
   return (
     <form action={formAction} className="space-y-7">
@@ -193,23 +247,7 @@ export function PublicationForm({
             Datos de reseña
           </p>
 
-          <div className="mt-5 grid gap-6 sm:grid-cols-[220px_1fr]">
-            <Field label="Puntaje" required error={errorFor("rating")}>
-              <select
-                name="rating"
-                defaultValue={values.rating}
-                required={kind === "REVIEW"}
-                className={controlClassName}
-              >
-                <option value="">Selecciona puntaje</option>
-                {ratingOptions.map((rating) => (
-                  <option key={rating} value={rating}>
-                    {rating}
-                  </option>
-                ))}
-              </select>
-            </Field>
-
+          <div className="mt-5">
             <ReviewTierField
               defaultValue={values.reviewTier}
               error={errorFor("reviewTier")}
@@ -406,14 +444,35 @@ export function PublicationForm({
         />
       </Field>
 
-      <div className="grid gap-6 sm:grid-cols-3">
+      <Field
+        label="Creador de la obra"
+        hint="Campo libre. Ej: Laura Itandehui, Alfonso Cuarón, Elena Garro, Nintendo."
+        error={errorFor("subjectCreatorName")}
+      >
+        <input
+          name="subjectCreatorName"
+          maxLength={180}
+          value={subjectCreatorName}
+          onChange={(event) => setSubjectCreatorName(event.target.value)}
+          className={controlClassName}
+        />
+      </Field>
+
+      <div className="grid gap-6 sm:grid-cols-2">
         <Field label="Categoría" error={errorFor("categoryId")}>
-          <OptionSelect
+          <select
             name="categoryId"
-            emptyLabel="Sin categoría"
-            options={categories}
-            defaultValue={values.categoryId}
-          />
+            value={categoryId}
+            onChange={(event) => setCategoryId(event.target.value)}
+            className={controlClassName}
+          >
+            <option value="">Sin categoría</option>
+            {categories.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.name}
+              </option>
+            ))}
+          </select>
         </Field>
 
         <Field label="Contributor / reviewer" error={errorFor("reviewerId")}>
@@ -425,15 +484,30 @@ export function PublicationForm({
           />
         </Field>
 
-        <Field label="Subject creator" error={errorFor("subjectCreatorId")}>
-          <OptionSelect
-            name="subjectCreatorId"
-            emptyLabel="Sin creador"
-            options={subjectCreators}
-            defaultValue={values.subjectCreatorId}
-          />
-        </Field>
       </div>
+
+      <ReviewMetadataFields
+        group={kind === "REVIEW" ? reviewMetadataGroup : null}
+        values={{
+          artistName,
+          albumName,
+          producerName,
+          bookAuthorName,
+          publisherName,
+          developerName,
+          platforms,
+        }}
+        setters={{
+          setArtistName,
+          setAlbumName,
+          setProducerName,
+          setBookAuthorName,
+          setPublisherName,
+          setDeveloperName,
+          setPlatforms,
+        }}
+        errorFor={errorFor}
+      />
 
       {state.message && (
         <p
@@ -454,6 +528,174 @@ export function PublicationForm({
         </button>
       </div>
     </form>
+  );
+}
+
+type ReviewMetadataValues = {
+  artistName: string;
+  albumName: string;
+  producerName: string;
+  bookAuthorName: string;
+  publisherName: string;
+  developerName: string;
+  platforms: string;
+};
+
+type ReviewMetadataSetters = {
+  setArtistName: (value: string) => void;
+  setAlbumName: (value: string) => void;
+  setProducerName: (value: string) => void;
+  setBookAuthorName: (value: string) => void;
+  setPublisherName: (value: string) => void;
+  setDeveloperName: (value: string) => void;
+  setPlatforms: (value: string) => void;
+};
+
+function ReviewMetadataFields({
+  group,
+  values,
+  setters,
+  errorFor,
+}: {
+  group: ReviewMetadataGroup;
+  values: ReviewMetadataValues;
+  setters: ReviewMetadataSetters;
+  errorFor: (field: string) => string | undefined;
+}) {
+  const visibleFields =
+    group === "music"
+      ? ["artistName", "albumName", "producerName"]
+      : group === "film"
+        ? ["producerName"]
+        : group === "literature"
+          ? ["bookAuthorName", "publisherName"]
+          : group === "games"
+            ? ["developerName", "platforms"]
+            : [];
+
+  return (
+    <div
+      className={
+        group ? "rounded-2xl border border-[#d8eee8] bg-[#f7fffc] p-5" : ""
+      }
+    >
+      {group && (
+        <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#25856d]">
+          Datos editoriales por categoría
+        </p>
+      )}
+
+      <div className={group ? "mt-5 grid gap-6 sm:grid-cols-2" : ""}>
+        {group === "music" && (
+          <>
+            <MetadataInput
+              label="Artista"
+              name="artistName"
+              value={values.artistName}
+              setValue={setters.setArtistName}
+              error={errorFor("artistName")}
+            />
+            <MetadataInput
+              label="Álbum / Disco"
+              name="albumName"
+              value={values.albumName}
+              setValue={setters.setAlbumName}
+              error={errorFor("albumName")}
+            />
+            <MetadataInput
+              label="Productora"
+              name="producerName"
+              value={values.producerName}
+              setValue={setters.setProducerName}
+              error={errorFor("producerName")}
+            />
+          </>
+        )}
+
+        {group === "film" && (
+          <MetadataInput
+            label="Productora"
+            name="producerName"
+            value={values.producerName}
+            setValue={setters.setProducerName}
+            error={errorFor("producerName")}
+          />
+        )}
+
+        {group === "literature" && (
+          <>
+            <MetadataInput
+              label="Autor"
+              name="bookAuthorName"
+              value={values.bookAuthorName}
+              setValue={setters.setBookAuthorName}
+              error={errorFor("bookAuthorName")}
+            />
+            <MetadataInput
+              label="Editorial"
+              name="publisherName"
+              value={values.publisherName}
+              setValue={setters.setPublisherName}
+              error={errorFor("publisherName")}
+            />
+          </>
+        )}
+
+        {group === "games" && (
+          <>
+            <MetadataInput
+              label="Casa de desarrollo"
+              name="developerName"
+              value={values.developerName}
+              setValue={setters.setDeveloperName}
+              error={errorFor("developerName")}
+            />
+            <MetadataInput
+              label="Plataformas"
+              name="platforms"
+              value={values.platforms}
+              setValue={setters.setPlatforms}
+              maxLength={220}
+              error={errorFor("platforms")}
+            />
+          </>
+        )}
+      </div>
+
+      {(Object.keys(values) as Array<keyof ReviewMetadataValues>)
+        .filter((name) => !visibleFields.includes(name))
+        .map((name) => (
+          <input key={name} type="hidden" name={name} value={values[name]} />
+        ))}
+    </div>
+  );
+}
+
+function MetadataInput({
+  label,
+  name,
+  value,
+  setValue,
+  maxLength = 180,
+  error,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  setValue: (value: string) => void;
+  maxLength?: number;
+  error?: string;
+}) {
+  return (
+    <Field label={label} error={error}>
+      <input
+        name={name}
+        maxLength={maxLength}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        className={controlClassName}
+      />
+    </Field>
   );
 }
 

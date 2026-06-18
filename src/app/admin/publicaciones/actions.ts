@@ -46,6 +46,7 @@ const optionalImageSource = z
   }, "Usa una ruta local /images/... o una URL válida que empiece con http:// o https://.");
 
 const optionalRelationId = z.string().trim().max(64);
+const optionalEditorialText = z.string().trim().max(180).default("");
 const specialItemFormats = new Set<SpecialFormat>([
   SpecialFormat.LIST,
   SpecialFormat.COLLECTION,
@@ -89,37 +90,24 @@ const publicationSchema = z.object({
       (value) => value === null || (value >= 1000 && value <= 2100),
       "El año debe estar entre 1000 y 2100.",
     ),
-  rating: z
-    .string()
-    .trim()
-    .refine(
-      (value) => value === "" || /^\d(?:\.\d)?$|^10(?:\.0)?$/.test(value),
-      "El puntaje debe estar entre 0.0 y 10.0.",
-    )
-    .transform((value) => (value === "" ? null : Number(value)))
-    .refine(
-      (value) => value === null || (value >= 0 && value <= 10),
-      "El puntaje debe estar entre 0.0 y 10.0.",
-    ),
   reviewTier: z.enum(["RECOMENDADO", "FAVORITO", "ESENCIAL", ""]).default(""),
   specialFormat: z
     .enum(["ARTICLE", "LIST", "COLLECTION", "FEATURE", ""])
     .default(""),
   workType: z.string().trim().max(100).default(""),
+  subjectCreatorName: optionalEditorialText,
+  artistName: optionalEditorialText,
+  albumName: optionalEditorialText,
+  producerName: optionalEditorialText,
+  bookAuthorName: optionalEditorialText,
+  publisherName: optionalEditorialText,
+  developerName: optionalEditorialText,
+  platforms: z.string().trim().max(220).default(""),
   externalUrl: optionalHttpUrl,
   categoryId: optionalRelationId,
   reviewerId: optionalRelationId,
-  subjectCreatorId: optionalRelationId,
 }).superRefine((data, ctx) => {
   if (data.kind !== "REVIEW") return;
-
-  if (data.rating === null) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Selecciona un puntaje para la reseña.",
-      path: ["rating"],
-    });
-  }
 
   if (!data.reviewTier) {
     ctx.addIssue({
@@ -231,14 +219,20 @@ function parsePublicationFormData(formData: FormData) {
     coverImageUrl: formData.get("coverImageUrl"),
     coverImageAlt: formData.get("coverImageAlt"),
     year: formData.get("year"),
-    rating: formData.get("rating") ?? "",
     reviewTier: formData.get("reviewTier") ?? "",
     specialFormat: formData.get("specialFormat") ?? "",
     workType: formData.get("workType"),
+    subjectCreatorName: formData.get("subjectCreatorName"),
+    artistName: formData.get("artistName"),
+    albumName: formData.get("albumName"),
+    producerName: formData.get("producerName"),
+    bookAuthorName: formData.get("bookAuthorName"),
+    publisherName: formData.get("publisherName"),
+    developerName: formData.get("developerName"),
+    platforms: formData.get("platforms"),
     externalUrl: formData.get("externalUrl"),
     categoryId: formData.get("categoryId"),
     reviewerId: formData.get("reviewerId"),
-    subjectCreatorId: formData.get("subjectCreatorId"),
   });
 }
 
@@ -256,7 +250,6 @@ function toPublicationWriteData(
     coverImageUrl: emptyToNull(data.coverImageUrl),
     coverImageAlt: emptyToNull(data.coverImageAlt),
     year: data.year,
-    rating: data.kind === "REVIEW" ? data.rating : null,
     reviewTier:
       data.kind === "REVIEW" && data.reviewTier
         ? reviewTierByFormValue[data.reviewTier]
@@ -266,15 +259,20 @@ function toPublicationWriteData(
         ? specialFormatByFormValue[data.specialFormat || "ARTICLE"]
         : null,
     workType: emptyToNull(data.workType),
+    subjectCreatorName: emptyToNull(data.subjectCreatorName),
+    artistName: emptyToNull(data.artistName),
+    albumName: emptyToNull(data.albumName),
+    producerName: emptyToNull(data.producerName),
+    bookAuthorName: emptyToNull(data.bookAuthorName),
+    publisherName: emptyToNull(data.publisherName),
+    developerName: emptyToNull(data.developerName),
+    platforms: emptyToNull(data.platforms),
     externalUrl: emptyToNull(data.externalUrl),
     category: emptyToNull(data.categoryId)
       ? { connect: { id: data.categoryId } }
       : { disconnect: true },
     reviewer: emptyToNull(data.reviewerId)
       ? { connect: { id: data.reviewerId } }
-      : { disconnect: true },
-    subjectCreator: emptyToNull(data.subjectCreatorId)
-      ? { connect: { id: data.subjectCreatorId } }
       : { disconnect: true },
   };
 }
@@ -293,7 +291,6 @@ function toPublicationCreateData(
     coverImageUrl: emptyToNull(data.coverImageUrl),
     coverImageAlt: emptyToNull(data.coverImageAlt),
     year: data.year,
-    rating: data.kind === "REVIEW" ? data.rating : null,
     reviewTier:
       data.kind === "REVIEW" && data.reviewTier
         ? reviewTierByFormValue[data.reviewTier]
@@ -303,15 +300,20 @@ function toPublicationCreateData(
         ? specialFormatByFormValue[data.specialFormat || "ARTICLE"]
         : null,
     workType: emptyToNull(data.workType),
+    subjectCreatorName: emptyToNull(data.subjectCreatorName),
+    artistName: emptyToNull(data.artistName),
+    albumName: emptyToNull(data.albumName),
+    producerName: emptyToNull(data.producerName),
+    bookAuthorName: emptyToNull(data.bookAuthorName),
+    publisherName: emptyToNull(data.publisherName),
+    developerName: emptyToNull(data.developerName),
+    platforms: emptyToNull(data.platforms),
     externalUrl: emptyToNull(data.externalUrl),
     category: emptyToNull(data.categoryId)
       ? { connect: { id: data.categoryId } }
       : undefined,
     reviewer: emptyToNull(data.reviewerId)
       ? { connect: { id: data.reviewerId } }
-      : undefined,
-    subjectCreator: emptyToNull(data.subjectCreatorId)
-      ? { connect: { id: data.subjectCreatorId } }
       : undefined,
     publishedAt: data.status === "PUBLISHED" ? new Date() : null,
   };
@@ -329,7 +331,7 @@ function getPublicationMutationErrorState(error: unknown): PublicationFormState 
     if (error.code === "P2003") {
       return {
         message:
-          "Una categoría, contributor o creador seleccionado ya no existe. Recarga la página.",
+          "Una categoría o contributor seleccionado ya no existe. Recarga la página.",
       };
     }
 

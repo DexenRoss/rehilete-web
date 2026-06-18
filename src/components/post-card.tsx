@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
 
 import type { PublicationCardView } from "@/lib/publications";
+
+import { RatingBadge } from "./reviews/rating-badge";
 
 type PostCardProps = {
   post: PublicationCardView;
@@ -24,10 +25,11 @@ export function PostCard({ post }: PostCardProps) {
           />
         </div>
 
-        <div className="absolute -right-3 top-3 inline-flex items-center gap-1 rounded-full border-2 border-white bg-[#61c8ab] px-2.5 py-1 text-sm font-bold text-white shadow-lg">
-          <Star className="h-3.5 w-3.5 fill-current" />
-          {post.rating.toFixed(1)}
-        </div>
+        {post.tier && (
+          <div className="absolute -right-3 top-3">
+            <RatingBadge tier={post.tier} />
+          </div>
+        )}
       </div>
 
       <div className="pt-4 text-center">

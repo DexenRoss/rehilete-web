@@ -18,8 +18,7 @@ export type PublicationCardView = {
   quote: string;
   imageSrc: string;
   imageAlt: string;
-  rating: number;
-  tier: PublicationReviewTier;
+  tier: PublicationReviewTier | null;
   actionTone: PublicationActionTone;
 };
 
@@ -59,20 +58,28 @@ export type PublicationSpecialItemView = {
     href: string;
     imageSrc: string;
     imageAlt: string;
-    subjectCreator: string | null;
+    subjectCreatorName: string | null;
     year: number | null;
     category: string | null;
-    rating: number | null;
+    tier: PublicationReviewTier | null;
   };
 };
 
 export type PublicationReviewDetailView = PublicationCardView & {
   subtitle: string | null;
   body: string;
+  categorySlug: string | null;
   workType: string | null;
   externalUrl: string | null;
   reviewer: string | null;
-  subjectCreator: string | null;
+  subjectCreatorName: string | null;
+  artistName: string | null;
+  albumName: string | null;
+  producerName: string | null;
+  bookAuthorName: string | null;
+  publisherName: string | null;
+  developerName: string | null;
+  platforms: string | null;
   tags: { id: string; name: string; slug: string }[];
   publishedAt: Date | null;
 };
@@ -85,7 +92,7 @@ export type PublicationSpecialDetailView = PublicationSpecialCardView & {
   workType: string | null;
   externalUrl: string | null;
   reviewer: string | null;
-  subjectCreator: string | null;
+  subjectCreatorName: string | null;
   specialItems: PublicationSpecialItemView[];
   tags: { id: string; name: string; slug: string }[];
   publishedAt: Date | null;
@@ -171,7 +178,6 @@ const categorySlugMap: Record<string, string> = {
 
 const publishedReviewInclude = {
   category: true,
-  subjectCreator: true,
   reviewer: true,
 } as const;
 
@@ -181,7 +187,6 @@ type PublishedReview = Prisma.PublicationGetPayload<{
 
 const publishedReviewDetailInclude = {
   category: true,
-  subjectCreator: true,
   reviewer: true,
   tags: {
     include: {
@@ -196,7 +201,6 @@ type PublishedReviewDetail = Prisma.PublicationGetPayload<{
 
 const publishedSpecialDetailInclude = {
   category: true,
-  subjectCreator: true,
   reviewer: true,
   tags: {
     include: {
@@ -274,7 +278,7 @@ function toPublicationCardView(
   publication: PublishedReview,
 ): PublicationCardView {
   const creator =
-    publication.subjectCreator?.name?.trim() ||
+    publication.subjectCreatorName?.trim() ||
     publication.subtitle?.trim() ||
     "Rehilete";
   const category = publication.category?.name?.trim() || "Resena";
@@ -297,10 +301,7 @@ function toPublicationCardView(
     imageAlt:
       publication.coverImageAlt?.trim() ||
       `Portada provisional de ${publication.title}`,
-    rating: publication.rating ?? 4.5,
-    tier: publication.reviewTier
-      ? reviewTierMap[publication.reviewTier]
-      : "recomendado",
+    tier: publication.reviewTier ? reviewTierMap[publication.reviewTier] : null,
     actionTone: "mint",
   };
 }
@@ -312,10 +313,18 @@ function toPublicationReviewDetailView(
     ...toPublicationCardView(publication),
     subtitle: publication.subtitle,
     body: publication.body,
+    categorySlug: publication.category?.slug ?? null,
     workType: publication.workType,
     externalUrl: publication.externalUrl,
     reviewer: publication.reviewer?.name ?? null,
-    subjectCreator: publication.subjectCreator?.name ?? null,
+    subjectCreatorName: publication.subjectCreatorName,
+    artistName: publication.artistName,
+    albumName: publication.albumName,
+    producerName: publication.producerName,
+    bookAuthorName: publication.bookAuthorName,
+    publisherName: publication.publisherName,
+    developerName: publication.developerName,
+    platforms: publication.platforms,
     tags: publication.tags.map(({ tag }) => ({
       id: tag.id,
       name: tag.name,
@@ -350,7 +359,9 @@ function toPublicationSpecialCardView(
       : null,
     description: getExcerpt(publication.description, publication.body),
     imageSrc:
-      coverImageUrl || categoryAsset?.imageSrc || "/images/rehilete/Literatura.png",
+      coverImageUrl ||
+      categoryAsset?.imageSrc ||
+      "/images/rehilete/Literatura.png",
     imageAlt: coverImageAlt,
     ...style,
   };
@@ -368,7 +379,7 @@ function toPublicationSpecialDetailView(
     workType: publication.workType,
     externalUrl: publication.externalUrl,
     reviewer: publication.reviewer?.name ?? null,
-    subjectCreator: publication.subjectCreator?.name ?? null,
+    subjectCreatorName: publication.subjectCreatorName,
     specialItems: publication.specialItems.map((item) => ({
       id: item.id,
       position: item.position,
@@ -382,10 +393,12 @@ function toPublicationSpecialDetailView(
         imageAlt:
           item.review.coverImageAlt?.trim() ||
           `Portada provisional de ${item.review.title}`,
-        subjectCreator: item.review.subjectCreator?.name ?? null,
+        subjectCreatorName: item.review.subjectCreatorName,
         year: item.review.year,
         category: item.review.category?.name ?? null,
-        rating: item.review.rating,
+        tier: item.review.reviewTier
+          ? reviewTierMap[item.review.reviewTier]
+          : null,
       },
     })),
     tags: publication.tags.map(({ tag }) => ({

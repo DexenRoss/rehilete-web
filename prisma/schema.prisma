@@ -60,14 +60,20 @@ model Publication {
   coverImageUrl      String?
   coverImageAlt      String?
   year               Int?
-  rating             Float?
   reviewTier         PublicationReviewTier?
   specialFormat      SpecialFormat?
   workType           String?
+  subjectCreatorName String?
+  artistName         String?
+  albumName          String?
+  producerName       String?
+  bookAuthorName     String?
+  publisherName      String?
+  developerName      String?
+  platforms          String?
   externalUrl        String?
   categoryId         String?
   reviewerId         String?
-  subjectCreatorId   String?
   createdById        String?
   updatedById        String?
   publishedAt        DateTime?
@@ -75,7 +81,6 @@ model Publication {
   updatedAt          DateTime               @updatedAt
   category           Category?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   reviewer           Contributor?           @relation("PublicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
-  subjectCreator     SubjectCreator?        @relation("PublicationSubjectCreator", fields: [subjectCreatorId], references: [id], onDelete: SetNull)
   createdBy          AdminUser?             @relation("PublicationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy          AdminUser?             @relation("PublicationUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   tags               PublicationTag[]
@@ -85,7 +90,6 @@ model Publication {
   @@index([kind, status])
   @@index([categoryId])
   @@index([reviewerId])
-  @@index([subjectCreatorId])
   @@index([createdById])
   @@index([updatedById])
   @@index([publishedAt])
@@ -108,17 +112,6 @@ model Contributor {
   bio          String?
   imageUrl     String?
   publications Publication[] @relation("PublicationReviewer")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-}
-
-model SubjectCreator {
-  id           String        @id @default(cuid())
-  name         String
-  slug         String        @unique
-  bio          String?
-  imageUrl     String?
-  publications Publication[] @relation("PublicationSubjectCreator")
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }

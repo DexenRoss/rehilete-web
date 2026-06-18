@@ -7,25 +7,18 @@ import { PublicationForm } from "./publication-form";
 export const dynamic = "force-dynamic";
 
 export default async function NewAdminPublicationPage() {
-  const [categories, contributors, subjectCreators] = await Promise.all([
+  const [categories, contributors] = await Promise.all([
     prisma.category.findMany({
       orderBy: { name: "asc" },
-      select: { id: true, name: true },
+      select: { id: true, name: true, slug: true },
     }),
     prisma.contributor.findMany({
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
-    prisma.subjectCreator.findMany({
-      orderBy: { name: "asc" },
-      select: { id: true, name: true },
-    }),
   ]);
 
-  const isSeedMissing =
-    categories.length === 0 ||
-    contributors.length === 0 ||
-    subjectCreators.length === 0;
+  const isSeedMissing = categories.length === 0 || contributors.length === 0;
 
   return (
     <main className="min-h-screen bg-[#f5f5f5] px-5 py-10 text-[#111]">
@@ -57,7 +50,7 @@ export default async function NewAdminPublicationPage() {
           >
             <p className="font-bold">Faltan datos de catálogo.</p>
             <p className="mt-1">
-              Para cargar categorías, contributors y subject creators, corre:
+              Para cargar categorías y contributors, corre:
               {" "}
               <code className="rounded bg-amber-100 px-2 py-1 font-mono text-sm">
                 npx prisma db seed
@@ -70,7 +63,6 @@ export default async function NewAdminPublicationPage() {
           <PublicationForm
             categories={categories}
             contributors={contributors}
-            subjectCreators={subjectCreators}
           />
         </div>
       </div>
