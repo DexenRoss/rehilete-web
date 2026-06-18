@@ -24,6 +24,7 @@ type PublicationFormProps = {
     formData: FormData,
   ) => Promise<PublicationFormState>;
   initialValues?: PublicationFormValues;
+  showSpecialItemsEditor?: boolean;
   submitLabel?: string;
   pendingLabel?: string;
 };
@@ -97,12 +98,18 @@ export type PublicationFormValues = {
   rating: string;
   reviewTier: "RECOMENDADO" | "FAVORITO" | "ESENCIAL" | "";
   specialFormat: "ARTICLE" | "LIST" | "COLLECTION" | "FEATURE" | "";
+  specialItemsText: string;
   workType: string;
   externalUrl: string;
   categoryId: string;
   reviewerId: string;
   subjectCreatorId: string;
 };
+
+type SpecialFormatFormValue = Exclude<
+  PublicationFormValues["specialFormat"],
+  ""
+>;
 
 const defaultValues: PublicationFormValues = {
   kind: "REVIEW",
@@ -118,6 +125,7 @@ const defaultValues: PublicationFormValues = {
   rating: "",
   reviewTier: "",
   specialFormat: "",
+  specialItemsText: "",
   workType: "",
   externalUrl: "",
   categoryId: "",
@@ -131,11 +139,15 @@ export function PublicationForm({
   subjectCreators,
   action = createPublication,
   initialValues,
+  showSpecialItemsEditor = false,
   submitLabel = "Crear publicación",
   pendingLabel = "Guardando...",
 }: PublicationFormProps) {
   const values = { ...defaultValues, ...initialValues };
   const [kind, setKind] = useState(values.kind);
+  const [specialFormat, setSpecialFormat] = useState<SpecialFormatFormValue>(
+    values.specialFormat || "ARTICLE",
+  );
   const [coverImageUrl, setCoverImageUrl] = useState(values.coverImageUrl);
   const [coverImageAlt, setCoverImageAlt] = useState(values.coverImageAlt);
   const [state, formAction, pending] = useActionState(
@@ -220,7 +232,12 @@ export function PublicationForm({
             >
               <select
                 name="specialFormat"
-                defaultValue={values.specialFormat || "ARTICLE"}
+                value={specialFormat}
+                onChange={(event) =>
+                  setSpecialFormat(
+                    event.target.value as SpecialFormatFormValue,
+                  )
+                }
                 className={controlClassName}
               >
                 {specialFormatOptions.map((option) => (
@@ -233,6 +250,32 @@ export function PublicationForm({
           </div>
         </div>
       )}
+
+      {showSpecialItemsEditor &&
+        kind === "SPECIAL" &&
+        (specialFormat === "LIST" || specialFormat === "COLLECTION") && (
+          <div className="rounded-2xl border border-[#e2e2e2] bg-[#fafafa] p-5">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#555]">
+              Reseñas incluidas
+            </p>
+
+            <div className="mt-5">
+              <Field
+                label="Items"
+                hint="Una línea por reseña: position | review-slug | label opcional | note opcional"
+                error={errorFor("specialItemsText")}
+              >
+                <textarea
+                  name="specialItemsText"
+                  rows={8}
+                  defaultValue={values.specialItemsText}
+                  placeholder={"1 | album-uno | #1 | Texto opcional\n2 | album-dos | #2 | Texto opcional"}
+                  className={controlClassName}
+                />
+              </Field>
+            </div>
+          </div>
+        )}
 
       <div className="grid gap-6 sm:grid-cols-2">
         <Field label="Título" required error={errorFor("title")}>

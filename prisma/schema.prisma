@@ -49,36 +49,38 @@ model AdminUser {
 }
 
 model Publication {
-  id               String            @id @default(cuid())
-  kind             PublicationKind
-  status           PublicationStatus @default(DRAFT)
-  title            String
-  slug             String            @unique
-  subtitle         String?
-  description      String?
-  body             String
-  coverImageUrl    String?
-  coverImageAlt    String?
-  year             Int?
-  rating           Float?
-  reviewTier       PublicationReviewTier?
-  specialFormat    SpecialFormat?
-  workType         String?
-  externalUrl      String?
-  categoryId       String?
-  reviewerId       String?
-  subjectCreatorId String?
-  createdById      String?
-  updatedById      String?
-  publishedAt      DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  category         Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  reviewer         Contributor?      @relation("PublicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
-  subjectCreator   SubjectCreator?   @relation("PublicationSubjectCreator", fields: [subjectCreatorId], references: [id], onDelete: SetNull)
-  createdBy        AdminUser?        @relation("PublicationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy        AdminUser?        @relation("PublicationUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  tags             PublicationTag[]
+  id                 String                 @id @default(cuid())
+  kind               PublicationKind
+  status             PublicationStatus      @default(DRAFT)
+  title              String
+  slug               String                 @unique
+  subtitle           String?
+  description        String?
+  body               String
+  coverImageUrl      String?
+  coverImageAlt      String?
+  year               Int?
+  rating             Float?
+  reviewTier         PublicationReviewTier?
+  specialFormat      SpecialFormat?
+  workType           String?
+  externalUrl        String?
+  categoryId         String?
+  reviewerId         String?
+  subjectCreatorId   String?
+  createdById        String?
+  updatedById        String?
+  publishedAt        DateTime?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  category           Category?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  reviewer           Contributor?           @relation("PublicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  subjectCreator     SubjectCreator?        @relation("PublicationSubjectCreator", fields: [subjectCreatorId], references: [id], onDelete: SetNull)
+  createdBy          AdminUser?             @relation("PublicationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy          AdminUser?             @relation("PublicationUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  tags               PublicationTag[]
+  specialItems       SpecialItem[]          @relation("SpecialItems")
+  includedInSpecials SpecialItem[]          @relation("IncludedInSpecials")
 
   @@index([kind, status])
   @@index([categoryId])
@@ -90,13 +92,13 @@ model Publication {
 }
 
 model Category {
-  id          String        @id @default(cuid())
-  name        String        @unique
-  slug        String        @unique
-  description String?
+  id           String        @id @default(cuid())
+  name         String        @unique
+  slug         String        @unique
+  description  String?
   publications Publication[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Contributor {
@@ -138,4 +140,25 @@ model PublicationTag {
 
   @@id([publicationId, tagId])
   @@index([tagId])
+}
+
+model SpecialItem {
+  id String @id @default(cuid())
+
+  specialId String
+  reviewId  String
+
+  position Int
+  label    String?
+  note     String?
+
+  special Publication @relation("SpecialItems", fields: [specialId], references: [id], onDelete: Cascade)
+  review  Publication @relation("IncludedInSpecials", fields: [reviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([specialId, reviewId])
+  @@index([specialId])
+  @@index([reviewId])
 }

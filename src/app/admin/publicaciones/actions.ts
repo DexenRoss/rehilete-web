@@ -46,6 +46,10 @@ const optionalImageSource = z
   }, "Usa una ruta local /images/... o una URL válida que empiece con http:// o https://.");
 
 const optionalRelationId = z.string().trim().max(64);
+const specialItemFormats = new Set<SpecialFormat>([
+  SpecialFormat.LIST,
+  SpecialFormat.COLLECTION,
+]);
 
 const publicationSchema = z.object({
   kind: z.enum(["REVIEW", "SPECIAL"], {
@@ -140,6 +144,80 @@ const specialFormatByFormValue = {
   COLLECTION: SpecialFormat.COLLECTION,
   FEATURE: SpecialFormat.FEATURE,
 } as const;
+
+type ParsedSpecialItem = {
+  position: number;
+  reviewSlug: string;
+  label: string | null;
+  note: string | null;
+};
+
+function shouldSaveSpecialItems(
+  kind: z.infer<typeof publicationSchema>["kind"],
+  specialFormat: SpecialFormat | null,
+) {
+  return kind === "SPECIAL" && specialFormat
+    ? specialItemFormats.has(specialFormat)
+    : false;
+}
+
+function parseSpecialItemsText(rawValue: FormDataEntryValue | null):
+  | { success: true; items: ParsedSpecialItem[] }
+  | { success: false; message: string } {
+  const rawText = rawValue?.toString() ?? "";
+  const lines = rawText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const items: ParsedSpecialItem[] = [];
+  const seenSlugs = new Set<string>();
+
+  for (const [index, line] of lines.entries()) {
+    const parts = line.split("|").map((part) => part.trim());
+
+    if (parts.length < 2 || parts.length > 4) {
+      return {
+        success: false,
+        message:
+          `Línea ${index + 1}: usa position | review-slug | label opcional | note opcional.`,
+      };
+    }
+
+    const [positionValue, reviewSlug, label = "", note = ""] = parts;
+    const position = Number(positionValue);
+
+    if (!Number.isInteger(position) || position < 1) {
+      return {
+        success: false,
+        message: `Línea ${index + 1}: la posición debe ser un número entero mayor a 0.`,
+      };
+    }
+
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(reviewSlug)) {
+      return {
+        success: false,
+        message: `Línea ${index + 1}: "${reviewSlug}" no es un slug válido.`,
+      };
+    }
+
+    if (seenSlugs.has(reviewSlug)) {
+      return {
+        success: false,
+        message: `Línea ${index + 1}: la reseña "${reviewSlug}" está duplicada.`,
+      };
+    }
+
+    seenSlugs.add(reviewSlug);
+    items.push({
+      position,
+      reviewSlug,
+      label: emptyToNull(label),
+      note: emptyToNull(note),
+    });
+  }
+
+  return { success: true, items };
+}
 
 function parsePublicationFormData(formData: FormData) {
   return publicationSchema.safeParse({
@@ -322,6 +400,22 @@ export async function updatePublication(
   }
 
   const data = parsed.data;
+  const specialFormat =
+    data.kind === "SPECIAL"
+      ? specialFormatByFormValue[data.specialFormat || "ARTICLE"]
+      : null;
+  const parsedSpecialItems = parseSpecialItemsText(
+    shouldSaveSpecialItems(data.kind, specialFormat)
+      ? formData.get("specialItemsText")
+      : null,
+  );
+
+  if (!parsedSpecialItems.success) {
+    return {
+      message: parsedSpecialItems.message,
+      fieldErrors: { specialItemsText: [parsedSpecialItems.message] },
+    };
+  }
 
   try {
     const currentPublication = await prisma.publication.findUnique({
@@ -338,14 +432,64 @@ export async function updatePublication(
       };
     }
 
-    await prisma.publication.update({
-      where: { id },
-      data: {
-        ...toPublicationWriteData(data),
-        ...(data.status === "PUBLISHED" && !currentPublication.publishedAt
-          ? { publishedAt: new Date() }
-          : {}),
-      },
+    const reviewSlugs = parsedSpecialItems.items.map((item) => item.reviewSlug);
+    const reviews = reviewSlugs.length
+      ? await prisma.publication.findMany({
+          where: {
+            slug: { in: reviewSlugs },
+            kind: "REVIEW",
+          },
+          select: {
+            id: true,
+            slug: true,
+          },
+        })
+      : [];
+    const reviewsBySlug = new Map(
+      reviews.map((review) => [review.slug, review.id]),
+    );
+    const missingSlug = reviewSlugs.find((slug) => !reviewsBySlug.has(slug));
+
+    if (missingSlug) {
+      return {
+        message: `No existe una reseña REVIEW con slug "${missingSlug}".`,
+        fieldErrors: {
+          specialItemsText: [
+            `No existe una reseña REVIEW con slug "${missingSlug}".`,
+          ],
+        },
+      };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.publication.update({
+        where: { id },
+        data: {
+          ...toPublicationWriteData(data),
+          ...(data.status === "PUBLISHED" && !currentPublication.publishedAt
+            ? { publishedAt: new Date() }
+            : {}),
+        },
+      });
+
+      await tx.specialItem.deleteMany({
+        where: { specialId: id },
+      });
+
+      if (
+        shouldSaveSpecialItems(data.kind, specialFormat) &&
+        parsedSpecialItems.items.length > 0
+      ) {
+        await tx.specialItem.createMany({
+          data: parsedSpecialItems.items.map((item) => ({
+            specialId: id,
+            reviewId: reviewsBySlug.get(item.reviewSlug) as string,
+            position: item.position,
+            label: item.label,
+            note: item.note,
+          })),
+        });
+      }
     });
 
     revalidatePublicationPaths(currentPublication.slug);

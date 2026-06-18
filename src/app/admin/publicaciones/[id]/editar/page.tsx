@@ -44,6 +44,19 @@ export default async function EditAdminPublicationPage({
           categoryId: true,
           reviewerId: true,
           subjectCreatorId: true,
+          specialItems: {
+            orderBy: { position: "asc" },
+            select: {
+              position: true,
+              label: true,
+              note: true,
+              review: {
+                select: {
+                  slug: true,
+                },
+              },
+            },
+          },
         },
       }),
       prisma.category.findMany({
@@ -76,6 +89,16 @@ export default async function EditAdminPublicationPage({
     rating: publication.rating?.toFixed(1) ?? "",
     reviewTier: publication.reviewTier ?? "",
     specialFormat: publication.specialFormat ?? "",
+    specialItemsText: publication.specialItems
+      .map((item) =>
+        [
+          item.position,
+          item.review.slug,
+          item.label ?? "",
+          item.note ?? "",
+        ].join(" | "),
+      )
+      .join("\n"),
     workType: publication.workType ?? "",
     externalUrl: publication.externalUrl ?? "",
     categoryId: publication.categoryId ?? "",
@@ -114,6 +137,7 @@ export default async function EditAdminPublicationPage({
             contributors={contributors}
             subjectCreators={subjectCreators}
             initialValues={initialValues}
+            showSpecialItemsEditor
             submitLabel="Guardar cambios"
             pendingLabel="Guardando cambios..."
           />

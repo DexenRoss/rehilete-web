@@ -46,6 +46,24 @@ export type PublicationSpecialCardView = {
   imageClassName: string;
 };
 
+export type PublicationSpecialItemView = {
+  id: string;
+  position: number;
+  label: string | null;
+  note: string | null;
+  review: {
+    title: string;
+    slug: string;
+    href: string;
+    imageSrc: string;
+    imageAlt: string;
+    subjectCreator: string | null;
+    year: number | null;
+    category: string | null;
+    rating: number | null;
+  };
+};
+
 export type PublicationReviewDetailView = PublicationCardView & {
   subtitle: string | null;
   body: string;
@@ -66,6 +84,7 @@ export type PublicationSpecialDetailView = PublicationSpecialCardView & {
   externalUrl: string | null;
   reviewer: string | null;
   subjectCreator: string | null;
+  specialItems: PublicationSpecialItemView[];
   tags: { id: string; name: string; slug: string }[];
   publishedAt: Date | null;
 };
@@ -171,6 +190,37 @@ const publishedReviewDetailInclude = {
 
 type PublishedReviewDetail = Prisma.PublicationGetPayload<{
   include: typeof publishedReviewDetailInclude;
+}>;
+
+const publishedSpecialDetailInclude = {
+  category: true,
+  subjectCreator: true,
+  reviewer: true,
+  tags: {
+    include: {
+      tag: true,
+    },
+  },
+  specialItems: {
+    where: {
+      review: {
+        kind: "REVIEW",
+        status: "PUBLISHED",
+      },
+    },
+    orderBy: {
+      position: "asc",
+    },
+    include: {
+      review: {
+        include: publishedReviewInclude,
+      },
+    },
+  },
+} as const;
+
+type PublishedSpecialDetail = Prisma.PublicationGetPayload<{
+  include: typeof publishedSpecialDetailInclude;
 }>;
 
 const publishedReviewWhere: Prisma.PublicationWhereInput = {
@@ -303,7 +353,7 @@ function toPublicationSpecialCardView(
 }
 
 function toPublicationSpecialDetailView(
-  publication: PublishedReviewDetail,
+  publication: PublishedSpecialDetail,
 ): PublicationSpecialDetailView {
   return {
     ...toPublicationSpecialCardView(publication),
@@ -315,6 +365,25 @@ function toPublicationSpecialDetailView(
     externalUrl: publication.externalUrl,
     reviewer: publication.reviewer?.name ?? null,
     subjectCreator: publication.subjectCreator?.name ?? null,
+    specialItems: publication.specialItems.map((item) => ({
+      id: item.id,
+      position: item.position,
+      label: item.label,
+      note: item.note,
+      review: {
+        title: item.review.title,
+        slug: item.review.slug,
+        href: `/resenas/review/${item.review.slug}`,
+        imageSrc: item.review.coverImageUrl?.trim() || PLACEHOLDER_IMAGE,
+        imageAlt:
+          item.review.coverImageAlt?.trim() ||
+          `Portada provisional de ${item.review.title}`,
+        subjectCreator: item.review.subjectCreator?.name ?? null,
+        year: item.review.year,
+        category: item.review.category?.name ?? null,
+        rating: item.review.rating,
+      },
+    })),
     tags: publication.tags.map(({ tag }) => ({
       id: tag.id,
       name: tag.name,
@@ -364,7 +433,7 @@ export async function getPublishedSpecialBySlug(slug: string) {
       ...publishedSpecialWhere,
       slug,
     },
-    include: publishedReviewDetailInclude,
+    include: publishedSpecialDetailInclude,
   });
 
   return publication ? toPublicationSpecialDetailView(publication) : null;

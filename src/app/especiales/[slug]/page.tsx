@@ -98,6 +98,76 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
             {special.body}
           </div>
 
+          {special.specialItems.length > 0 && (
+            <section className="mt-12 max-w-3xl border-t border-[#e5e5e5] pt-8">
+              <h2 className="text-2xl font-extrabold text-[#111111]">
+                Reseñas incluidas
+              </h2>
+
+              <div className="mt-5 space-y-4">
+                {special.specialItems.map((item) => (
+                  <article
+                    key={item.id}
+                    className="grid gap-4 rounded-[8px] bg-[#f2f2f2] p-4 sm:grid-cols-[120px_1fr]"
+                  >
+                    <Link
+                      href={item.review.href}
+                      className="block overflow-hidden bg-white"
+                    >
+                      <Image
+                        src={item.review.imageSrc}
+                        alt={item.review.imageAlt}
+                        width={240}
+                        height={348}
+                        unoptimized
+                        className="aspect-[0.69] h-auto w-full object-cover"
+                      />
+                    </Link>
+
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[#555555]">
+                        <span>{item.position}</span>
+                        {item.label && <span>{item.label}</span>}
+                        {item.review.category && (
+                          <span className="rounded-full bg-white px-3 py-1">
+                            {item.review.category}
+                          </span>
+                        )}
+                        {item.review.rating !== null && (
+                          <span className="rounded-full bg-[#cf3e81] px-3 py-1 text-white">
+                            {item.review.rating.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="mt-3 text-xl font-extrabold leading-tight">
+                        <Link
+                          href={item.review.href}
+                          className="transition-colors hover:text-[#cf3e81]"
+                        >
+                          {item.review.title}
+                        </Link>
+                      </h3>
+
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm font-semibold text-[#555555]">
+                        {item.review.subjectCreator && (
+                          <span>{item.review.subjectCreator}</span>
+                        )}
+                        {item.review.year && <span>{item.review.year}</span>}
+                      </div>
+
+                      {item.note && (
+                        <p className="mt-3 text-base leading-7 text-[#333333]">
+                          {item.note}
+                        </p>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
           {(special.tags.length > 0 || special.externalUrl) && (
             <footer className="mt-10 border-t border-[#e5e5e5] pt-6">
               {special.tags.length > 0 && (
