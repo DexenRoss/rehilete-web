@@ -1,4 +1,4 @@
-import type { Category, Prisma } from "@prisma/client";
+import type { Category, Prisma, SpecialFormat } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
@@ -36,6 +36,8 @@ export type PublicationSpecialCardView = {
   title: string;
   slug: string;
   href: string;
+  specialFormat: SpecialFormat | null;
+  specialFormatLabel: string | null;
   description: string;
   imageSrc: string;
   imageAlt: string;
@@ -195,6 +197,13 @@ const reviewTierMap = {
   ESENCIAL: "esencial",
 } as const;
 
+const specialFormatLabelMap: Record<SpecialFormat, string> = {
+  ARTICLE: "Artículo especial",
+  LIST: "Lista",
+  COLLECTION: "Colección",
+  FEATURE: "Reportaje especial",
+};
+
 function getExcerpt(description: string | null, body: string) {
   const source = description?.trim() || body.replace(/\s+/g, " ").trim();
 
@@ -277,6 +286,10 @@ function toPublicationSpecialCardView(
     title: publication.title,
     slug: publication.slug,
     href: `/especiales/${publication.slug}`,
+    specialFormat: publication.specialFormat,
+    specialFormatLabel: publication.specialFormat
+      ? specialFormatLabelMap[publication.specialFormat]
+      : null,
     description: getExcerpt(publication.description, publication.body),
     imageSrc:
       publication.coverImageUrl?.trim() ||

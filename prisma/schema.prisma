@@ -16,6 +16,13 @@ enum PublicationKind {
   SPECIAL
 }
 
+enum SpecialFormat {
+  ARTICLE
+  LIST
+  COLLECTION
+  FEATURE
+}
+
 enum PublicationStatus {
   DRAFT
   PUBLISHED
@@ -55,6 +62,7 @@ model Publication {
   year             Int?
   rating           Float?
   reviewTier       PublicationReviewTier?
+  specialFormat    SpecialFormat?
   workType         String?
   externalUrl      String?
   categoryId       String?

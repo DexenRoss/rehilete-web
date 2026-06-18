@@ -9,6 +9,13 @@ const dateFormatter = new Intl.DateTimeFormat("es-MX", {
   timeStyle: "short",
 });
 
+const specialFormatLabels = {
+  ARTICLE: "Artículo",
+  LIST: "Lista",
+  COLLECTION: "Colección",
+  FEATURE: "Reportaje",
+} as const;
+
 export default async function AdminPublicationsPage() {
   const publications = await prisma.publication.findMany({
     orderBy: { createdAt: "desc" },
@@ -16,6 +23,7 @@ export default async function AdminPublicationsPage() {
       id: true,
       title: true,
       kind: true,
+      specialFormat: true,
       status: true,
       createdAt: true,
       category: { select: { name: true } },
@@ -68,7 +76,13 @@ export default async function AdminPublicationsPage() {
                     <tr key={publication.id} className="border-t border-[#e5e5e5]">
                       <td className="px-5 py-4 font-bold">{publication.title}</td>
                       <td className="px-5 py-4">
-                        {publication.kind === "REVIEW" ? "Reseña" : "Especial"}
+                        {publication.kind === "REVIEW"
+                          ? "Reseña"
+                          : `Especial · ${
+                              publication.specialFormat
+                                ? specialFormatLabels[publication.specialFormat]
+                                : "-"
+                            }`}
                       </td>
                       <td className="px-5 py-4">
                         <span

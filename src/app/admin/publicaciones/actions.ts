@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, PublicationReviewTier } from "@prisma/client";
+import { Prisma, PublicationReviewTier, SpecialFormat } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -98,6 +98,9 @@ const publicationSchema = z.object({
       "El puntaje debe estar entre 0.0 y 10.0.",
     ),
   reviewTier: z.enum(["RECOMENDADO", "FAVORITO", "ESENCIAL", ""]).default(""),
+  specialFormat: z
+    .enum(["ARTICLE", "LIST", "COLLECTION", "FEATURE", ""])
+    .default(""),
   workType: z.string().trim().max(100).default(""),
   externalUrl: optionalHttpUrl,
   categoryId: optionalRelationId,
@@ -131,6 +134,13 @@ const reviewTierByFormValue = {
   ESENCIAL: PublicationReviewTier.ESENCIAL,
 } as const;
 
+const specialFormatByFormValue = {
+  ARTICLE: SpecialFormat.ARTICLE,
+  LIST: SpecialFormat.LIST,
+  COLLECTION: SpecialFormat.COLLECTION,
+  FEATURE: SpecialFormat.FEATURE,
+} as const;
+
 function parsePublicationFormData(formData: FormData) {
   return publicationSchema.safeParse({
     kind: formData.get("kind"),
@@ -145,6 +155,7 @@ function parsePublicationFormData(formData: FormData) {
     year: formData.get("year"),
     rating: formData.get("rating") ?? "",
     reviewTier: formData.get("reviewTier") ?? "",
+    specialFormat: formData.get("specialFormat") ?? "",
     workType: formData.get("workType"),
     externalUrl: formData.get("externalUrl"),
     categoryId: formData.get("categoryId"),
@@ -171,6 +182,10 @@ function toPublicationWriteData(
     reviewTier:
       data.kind === "REVIEW" && data.reviewTier
         ? reviewTierByFormValue[data.reviewTier]
+        : null,
+    specialFormat:
+      data.kind === "SPECIAL"
+        ? specialFormatByFormValue[data.specialFormat || "ARTICLE"]
         : null,
     workType: emptyToNull(data.workType),
     externalUrl: emptyToNull(data.externalUrl),
@@ -204,6 +219,10 @@ function toPublicationCreateData(
     reviewTier:
       data.kind === "REVIEW" && data.reviewTier
         ? reviewTierByFormValue[data.reviewTier]
+        : null,
+    specialFormat:
+      data.kind === "SPECIAL"
+        ? specialFormatByFormValue[data.specialFormat || "ARTICLE"]
         : null,
     workType: emptyToNull(data.workType),
     externalUrl: emptyToNull(data.externalUrl),

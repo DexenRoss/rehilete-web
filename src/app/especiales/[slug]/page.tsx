@@ -55,6 +55,11 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
 
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
+            {special.specialFormatLabel && (
+              <span className="rounded-full bg-[#e8f8f3] px-4 py-2 text-sm font-semibold text-[#206f5d]">
+                {special.specialFormatLabel}
+              </span>
+            )}
             {special.category && (
               <span className="rounded-full bg-[#f3ede6] px-4 py-2 text-sm font-semibold text-[#272727]">
                 {special.category}

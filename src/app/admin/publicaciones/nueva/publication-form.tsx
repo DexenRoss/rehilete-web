@@ -64,6 +64,25 @@ const reviewTierOptions = [
   },
 ];
 
+const specialFormatOptions = [
+  {
+    value: "ARTICLE",
+    label: "Artículo / Biografía / Suceso",
+  },
+  {
+    value: "LIST",
+    label: "Lista / Top / Ranking",
+  },
+  {
+    value: "COLLECTION",
+    label: "Colección temática",
+  },
+  {
+    value: "FEATURE",
+    label: "Reportaje / Especial editorial",
+  },
+] as const;
+
 export type PublicationFormValues = {
   kind: "REVIEW" | "SPECIAL";
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -77,6 +96,7 @@ export type PublicationFormValues = {
   year: string;
   rating: string;
   reviewTier: "RECOMENDADO" | "FAVORITO" | "ESENCIAL" | "";
+  specialFormat: "ARTICLE" | "LIST" | "COLLECTION" | "FEATURE" | "";
   workType: string;
   externalUrl: string;
   categoryId: string;
@@ -97,6 +117,7 @@ const defaultValues: PublicationFormValues = {
   year: "",
   rating: "",
   reviewTier: "",
+  specialFormat: "",
   workType: "",
   externalUrl: "",
   categoryId: "",
@@ -181,6 +202,34 @@ export function PublicationForm({
               defaultValue={values.reviewTier}
               error={errorFor("reviewTier")}
             />
+          </div>
+        </div>
+      )}
+
+      {kind === "SPECIAL" && (
+        <div className="rounded-2xl border border-[#d8eee8] bg-[#f7fffc] p-5">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#25856d]">
+            Datos de especial
+          </p>
+
+          <div className="mt-5">
+            <Field
+              label="Formato del especial"
+              required
+              error={errorFor("specialFormat")}
+            >
+              <select
+                name="specialFormat"
+                defaultValue={values.specialFormat || "ARTICLE"}
+                className={controlClassName}
+              >
+                {specialFormatOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
           </div>
         </div>
       )}
