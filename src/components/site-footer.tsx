@@ -21,7 +21,7 @@ export function SiteFooter() {
 
         <div className="flex flex-col gap-2 text-center text-xl text-[#2b2b2b] md:text-left">
           <Link
-            href="#contacto"
+            href="/nosotros"
             className="font-extrabold underline underline-offset-2"
           >
             Nosotros / Contacto
