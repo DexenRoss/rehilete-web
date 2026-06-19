@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import type { PublicationCardView } from "@/lib/publications";
 
-import { RatingBadge } from "./rating-badge";
+import { ReviewTierBadge } from "./review-tier-badge";
 
 const actionToneClasses = {
   mint: "bg-[#63d0b2] hover:bg-[#57c2a5]",
@@ -34,7 +34,7 @@ export function ReviewCard({ post }: ReviewCardProps) {
 
       <div className="flex min-w-0 flex-col gap-4 lg:self-stretch lg:py-2">
         <div className="flex items-center gap-4">
-          {post.tier && <RatingBadge tier={post.tier} />}
+          {post.tier && <ReviewTierBadge tier={post.tier} />}
           <h2 className="text-xl font-extrabold leading-tight text-[#111111] sm:text-[2rem]">
             {post.title} - {post.creator} ({post.year})
           </h2>

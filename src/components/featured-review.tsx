@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import type { PublicationCardView } from "@/lib/publications";
 
-import { RatingBadge } from "./reviews/rating-badge";
+import { ReviewTierBadge } from "./reviews/review-tier-badge";
 
 type FeaturedReviewProps = {
   post: PublicationCardView;
@@ -54,7 +54,7 @@ export function FeaturedReview({ post }: FeaturedReviewProps) {
           </span>
           {post.tier && (
             <span className="inline-flex items-center gap-3 rounded-full bg-[#f7f7f7] px-4 py-2 text-sm font-bold">
-              <RatingBadge tier={post.tier} />
+              <ReviewTierBadge tier={post.tier} />
               {tierLabel[post.tier]}
             </span>
           )}

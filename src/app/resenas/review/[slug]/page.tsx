@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { RatingBadge } from "@/components/reviews/rating-badge";
+import { ReviewTierBadge } from "@/components/reviews/review-tier-badge";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getPublishedReviewBySlug } from "@/lib/publications";
@@ -164,7 +164,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
           {review.tier && (
             <div className="mt-6 flex flex-wrap items-center gap-4">
               <span className="inline-flex items-center gap-3 rounded-full bg-[#f7f7f7] px-4 py-2 text-sm font-bold">
-                <RatingBadge tier={review.tier} />
+                <ReviewTierBadge tier={review.tier} />
                 {tierLabel[review.tier]}
               </span>
             </div>

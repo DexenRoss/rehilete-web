@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { RatingBadge } from "@/components/reviews/rating-badge";
+import { ReviewTierBadge } from "@/components/reviews/review-tier-badge";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getPublishedSpecialBySlug } from "@/lib/publications";
@@ -91,12 +91,6 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
             {special.reviewer && <span>Por {special.reviewer}</span>}
           </div>
 
-          {special.description && (
-            <p className="mt-8 max-w-3xl text-xl leading-9 text-[#333333]">
-              {special.description}
-            </p>
-          )}
-
           <div className="mt-10 max-w-3xl whitespace-pre-line text-lg leading-9 text-[#171717]">
             {special.body}
           </div>
@@ -139,7 +133,7 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
                         )}
                         {item.review.tier && (
                           <span className="inline-flex items-center rounded-full bg-white px-2 py-1">
-                            <RatingBadge tier={item.review.tier} />
+                            <ReviewTierBadge tier={item.review.tier} />
                           </span>
                         )}
                       </div>

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import type { PublicationCardView } from "@/lib/publications";
 
-import { RatingBadge } from "./reviews/rating-badge";
+import { ReviewTierBadge } from "./reviews/review-tier-badge";
 
 type PostCardProps = {
   post: PublicationCardView;
@@ -27,7 +27,7 @@ export function PostCard({ post }: PostCardProps) {
 
         {post.tier && (
           <div className="absolute -right-3 top-3">
-            <RatingBadge tier={post.tier} />
+            <ReviewTierBadge tier={post.tier} />
           </div>
         )}
       </div>

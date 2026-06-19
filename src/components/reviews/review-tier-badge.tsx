@@ -8,29 +8,29 @@ const badgeMap: Record<
 > = {
   recomendado: {
     src: "/images/rehilete/Recomendado.png",
-    alt: "Calificación recomendado",
+    alt: "Distintivo recomendado",
     width: 54,
     height: 54,
   },
   favorito: {
     src: "/images/rehilete/Favorito.png",
-    alt: "Calificación favorito",
+    alt: "Distintivo favorito",
     width: 82,
     height: 42,
   },
   esencial: {
     src: "/images/rehilete/Esencial.png",
-    alt: "Calificación esencial",
+    alt: "Distintivo esencial",
     width: 116,
     height: 40,
   },
 };
 
-type RatingBadgeProps = {
+type ReviewTierBadgeProps = {
   tier: ReviewTier;
 };
 
-export function RatingBadge({ tier }: RatingBadgeProps) {
+export function ReviewTierBadge({ tier }: ReviewTierBadgeProps) {
   const badge = badgeMap[tier];
 
   return (
