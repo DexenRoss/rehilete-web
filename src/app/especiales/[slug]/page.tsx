@@ -73,12 +73,12 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
             )}
           </div>
 
-          <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.04em] sm:text-5xl">
+          <h1 className="mt-5 text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
             {special.title}
           </h1>
 
           {special.subtitle && (
-            <p className="mt-3 text-2xl font-semibold leading-snug text-[#555555]">
+            <p className="mt-3 text-xl font-semibold leading-snug text-[#555555] sm:text-2xl">
               {special.subtitle}
             </p>
           )}
@@ -91,13 +91,13 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
             {special.reviewer && <span>Por {special.reviewer}</span>}
           </div>
 
-          <div className="mt-10 max-w-3xl whitespace-pre-line text-lg leading-9 text-[#171717]">
+          <div className="mt-10 max-w-3xl whitespace-pre-line text-base leading-8 text-[#171717] sm:text-lg sm:leading-9">
             {special.body}
           </div>
 
           {special.specialItems.length > 0 && (
             <section className="mt-14 max-w-4xl border-t-4 border-[#111111] pt-8">
-              <h2 className="text-3xl font-extrabold leading-tight text-[#111111]">
+              <h2 className="text-2xl font-extrabold leading-tight text-[#111111] sm:text-3xl">
                 Reseñas incluidas
               </h2>
 
@@ -138,7 +138,7 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
                         )}
                       </div>
 
-                      <h3 className="mt-4 text-2xl font-extrabold leading-tight sm:text-3xl">
+                      <h3 className="mt-4 text-xl font-extrabold leading-tight sm:text-3xl">
                         <Link
                           href={item.review.href}
                           className="transition-colors hover:text-[#cf3e81]"

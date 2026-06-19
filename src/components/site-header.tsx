@@ -31,11 +31,11 @@ export function SiteHeader() {
             width={2519}
             height={1183}
             priority
-            className="h-[84px] w-auto"
+            className="h-[64px] w-auto sm:h-[84px]"
           />
         </Link>
 
-        <div className="flex w-full flex-col items-center gap-4 pb-2 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center">
+        <div className="flex w-full flex-col items-center gap-3 pb-2 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-4">
           <div className="flex items-center gap-4 text-black md:justify-start">
             {socialLinks.map(({ label, href, icon: Icon }) => (
               <Link
@@ -49,7 +49,7 @@ export function SiteHeader() {
             ))}
           </div>
 
-          <nav className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[1.02rem] font-medium text-black">
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[0.98rem] font-medium text-black sm:gap-x-8 sm:text-[1.02rem]">
             {navigation.slice(0, 1).map(({ label, href }) => (
               <Link
                 key={label}

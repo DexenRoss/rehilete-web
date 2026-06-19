@@ -143,12 +143,12 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
             )}
           </div>
 
-          <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.04em] sm:text-5xl">
+          <h1 className="mt-5 text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
             {review.title}
           </h1>
 
           {review.subtitle && (
-            <p className="mt-3 text-2xl font-semibold leading-snug text-[#555555]">
+            <p className="mt-3 text-xl font-semibold leading-snug text-[#555555] sm:text-2xl">
               {review.subtitle}
             </p>
           )}
@@ -191,12 +191,12 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
           )}
 
           {review.description && (
-            <p className="mt-8 max-w-3xl text-xl leading-9 text-[#333333]">
+            <p className="mt-8 max-w-3xl text-lg leading-8 text-[#333333] sm:text-xl sm:leading-9">
               {review.description}
             </p>
           )}
 
-          <div className="mt-10 max-w-3xl whitespace-pre-line text-lg leading-9 text-[#171717]">
+          <div className="mt-10 max-w-3xl whitespace-pre-line text-base leading-8 text-[#171717] sm:text-lg sm:leading-9">
             {review.body}
           </div>
 
