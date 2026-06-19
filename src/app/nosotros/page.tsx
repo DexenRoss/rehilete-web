@@ -68,7 +68,8 @@ import type { Metadata } from "next";
           </div>
           </section>
           <section className="border-y border-[#e7e7e7] bg-[#f7f7f7]">
-          <div className="mx-auto w-full max-w-6xl px-5 py-12 md:py-16">`r`n          <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
+          <div className="mx-auto w-full max-w-6xl px-5 py-12 md:py-16">
+          <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
           <section className="rounded-[8px] border border-[#dedede] bg-white p-5 shadow-sm sm:p-8">
           <h2 className="text-3xl font-extrabold leading-tight sm:text-4xl">
           Ponte en contacto
