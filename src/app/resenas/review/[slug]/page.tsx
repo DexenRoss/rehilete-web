@@ -57,17 +57,23 @@ function getReviewFacts(review: NonNullable<Awaited<ReturnType<typeof getPublish
       { label: "Artista", value: review.artistName },
       { label: "Álbum / Disco", value: review.albumName },
       { label: "Productora", value: review.producerName },
+      { label: "Género", value: review.genreName },
     );
   }
 
   if (group === "film") {
-    facts.push({ label: "Productora", value: review.producerName });
+    facts.push(
+      { label: "Director", value: review.directorName },
+      { label: "Productora", value: review.producerName },
+      { label: "Género", value: review.genreName },
+    );
   }
 
   if (group === "literature") {
     facts.push(
       { label: "Autor", value: review.bookAuthorName },
       { label: "Editorial", value: review.publisherName },
+      { label: "Género", value: review.genreName },
     );
   }
 
@@ -75,6 +81,7 @@ function getReviewFacts(review: NonNullable<Awaited<ReturnType<typeof getPublish
     facts.push(
       { label: "Casa de desarrollo", value: review.developerName },
       { label: "Plataformas", value: review.platforms },
+      { label: "Género", value: review.genreName },
     );
   }
 

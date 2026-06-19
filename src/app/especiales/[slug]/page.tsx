@@ -157,6 +157,12 @@ export default async function SpecialPage({ params }: SpecialPageProps) {
                         {item.review.subjectCreatorName && (
                           <span>{item.review.subjectCreatorName}</span>
                         )}
+                        {item.review.directorName && (
+                          <span>{item.review.directorName}</span>
+                        )}
+                        {item.review.genreName && (
+                          <span>{item.review.genreName}</span>
+                        )}
                         {item.review.year && <span>{item.review.year}</span>}
                       </div>
 

@@ -99,6 +99,8 @@ export type PublicationFormValues = {
   artistName: string;
   albumName: string;
   producerName: string;
+  directorName: string;
+  genreName: string;
   bookAuthorName: string;
   publisherName: string;
   developerName: string;
@@ -132,6 +134,8 @@ const defaultValues: PublicationFormValues = {
   artistName: "",
   albumName: "",
   producerName: "",
+  directorName: "",
+  genreName: "",
   bookAuthorName: "",
   publisherName: "",
   developerName: "",
@@ -196,6 +200,8 @@ export function PublicationForm({
   const [artistName, setArtistName] = useState(values.artistName);
   const [albumName, setAlbumName] = useState(values.albumName);
   const [producerName, setProducerName] = useState(values.producerName);
+  const [directorName, setDirectorName] = useState(values.directorName);
+  const [genreName, setGenreName] = useState(values.genreName);
   const [bookAuthorName, setBookAuthorName] = useState(values.bookAuthorName);
   const [publisherName, setPublisherName] = useState(values.publisherName);
   const [developerName, setDeveloperName] = useState(values.developerName);
@@ -492,6 +498,8 @@ export function PublicationForm({
           artistName,
           albumName,
           producerName,
+          directorName,
+          genreName,
           bookAuthorName,
           publisherName,
           developerName,
@@ -501,6 +509,8 @@ export function PublicationForm({
           setArtistName,
           setAlbumName,
           setProducerName,
+          setDirectorName,
+          setGenreName,
           setBookAuthorName,
           setPublisherName,
           setDeveloperName,
@@ -535,6 +545,8 @@ type ReviewMetadataValues = {
   artistName: string;
   albumName: string;
   producerName: string;
+  directorName: string;
+  genreName: string;
   bookAuthorName: string;
   publisherName: string;
   developerName: string;
@@ -545,6 +557,8 @@ type ReviewMetadataSetters = {
   setArtistName: (value: string) => void;
   setAlbumName: (value: string) => void;
   setProducerName: (value: string) => void;
+  setDirectorName: (value: string) => void;
+  setGenreName: (value: string) => void;
   setBookAuthorName: (value: string) => void;
   setPublisherName: (value: string) => void;
   setDeveloperName: (value: string) => void;
@@ -564,13 +578,13 @@ function ReviewMetadataFields({
 }) {
   const visibleFields =
     group === "music"
-      ? ["artistName", "albumName", "producerName"]
+      ? ["artistName", "albumName", "producerName", "genreName"]
       : group === "film"
-        ? ["producerName"]
+        ? ["directorName", "producerName", "genreName"]
         : group === "literature"
-          ? ["bookAuthorName", "publisherName"]
+          ? ["bookAuthorName", "publisherName", "genreName"]
           : group === "games"
-            ? ["developerName", "platforms"]
+            ? ["developerName", "platforms", "genreName"]
             : [];
 
   return (
@@ -588,76 +602,34 @@ function ReviewMetadataFields({
       <div className={group ? "mt-5 grid gap-6 sm:grid-cols-2" : ""}>
         {group === "music" && (
           <>
-            <MetadataInput
-              label="Artista"
-              name="artistName"
-              value={values.artistName}
-              setValue={setters.setArtistName}
-              error={errorFor("artistName")}
-            />
-            <MetadataInput
-              label="Álbum / Disco"
-              name="albumName"
-              value={values.albumName}
-              setValue={setters.setAlbumName}
-              error={errorFor("albumName")}
-            />
-            <MetadataInput
-              label="Productora"
-              name="producerName"
-              value={values.producerName}
-              setValue={setters.setProducerName}
-              error={errorFor("producerName")}
-            />
+            <MetadataInput label="Artista" name="artistName" value={values.artistName} setValue={setters.setArtistName} error={errorFor("artistName")} />
+            <MetadataInput label="Álbum / Disco" name="albumName" value={values.albumName} setValue={setters.setAlbumName} error={errorFor("albumName")} />
+            <MetadataInput label="Productora" name="producerName" value={values.producerName} setValue={setters.setProducerName} error={errorFor("producerName")} />
+            <MetadataInput label="Género" name="genreName" value={values.genreName} setValue={setters.setGenreName} error={errorFor("genreName")} />
           </>
         )}
 
         {group === "film" && (
-          <MetadataInput
-            label="Productora"
-            name="producerName"
-            value={values.producerName}
-            setValue={setters.setProducerName}
-            error={errorFor("producerName")}
-          />
+          <>
+            <MetadataInput label="Director" name="directorName" value={values.directorName} setValue={setters.setDirectorName} error={errorFor("directorName")} />
+            <MetadataInput label="Productora" name="producerName" value={values.producerName} setValue={setters.setProducerName} error={errorFor("producerName")} />
+            <MetadataInput label="Género" name="genreName" value={values.genreName} setValue={setters.setGenreName} error={errorFor("genreName")} />
+          </>
         )}
 
         {group === "literature" && (
           <>
-            <MetadataInput
-              label="Autor"
-              name="bookAuthorName"
-              value={values.bookAuthorName}
-              setValue={setters.setBookAuthorName}
-              error={errorFor("bookAuthorName")}
-            />
-            <MetadataInput
-              label="Editorial"
-              name="publisherName"
-              value={values.publisherName}
-              setValue={setters.setPublisherName}
-              error={errorFor("publisherName")}
-            />
+            <MetadataInput label="Autor" name="bookAuthorName" value={values.bookAuthorName} setValue={setters.setBookAuthorName} error={errorFor("bookAuthorName")} />
+            <MetadataInput label="Editorial" name="publisherName" value={values.publisherName} setValue={setters.setPublisherName} error={errorFor("publisherName")} />
+            <MetadataInput label="Género" name="genreName" value={values.genreName} setValue={setters.setGenreName} error={errorFor("genreName")} />
           </>
         )}
 
         {group === "games" && (
           <>
-            <MetadataInput
-              label="Casa de desarrollo"
-              name="developerName"
-              value={values.developerName}
-              setValue={setters.setDeveloperName}
-              error={errorFor("developerName")}
-            />
-            <MetadataInput
-              label="Plataformas"
-              name="platforms"
-              value={values.platforms}
-              setValue={setters.setPlatforms}
-              maxLength={220}
-              error={errorFor("platforms")}
-            />
+            <MetadataInput label="Casa de desarrollo" name="developerName" value={values.developerName} setValue={setters.setDeveloperName} error={errorFor("developerName")} />
+            <MetadataInput label="Plataformas" name="platforms" value={values.platforms} setValue={setters.setPlatforms} maxLength={220} error={errorFor("platforms")} />
+            <MetadataInput label="Género" name="genreName" value={values.genreName} setValue={setters.setGenreName} error={errorFor("genreName")} />
           </>
         )}
       </div>

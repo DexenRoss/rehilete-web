@@ -59,6 +59,8 @@ export type PublicationSpecialItemView = {
     imageSrc: string;
     imageAlt: string;
     subjectCreatorName: string | null;
+    directorName: string | null;
+    genreName: string | null;
     year: number | null;
     category: string | null;
     tier: PublicationReviewTier | null;
@@ -76,6 +78,8 @@ export type PublicationReviewDetailView = PublicationCardView & {
   artistName: string | null;
   albumName: string | null;
   producerName: string | null;
+  directorName: string | null;
+  genreName: string | null;
   bookAuthorName: string | null;
   publisherName: string | null;
   developerName: string | null;
@@ -321,6 +325,8 @@ function toPublicationReviewDetailView(
     artistName: publication.artistName,
     albumName: publication.albumName,
     producerName: publication.producerName,
+    directorName: publication.directorName,
+    genreName: publication.genreName,
     bookAuthorName: publication.bookAuthorName,
     publisherName: publication.publisherName,
     developerName: publication.developerName,
@@ -394,6 +400,8 @@ function toPublicationSpecialDetailView(
           item.review.coverImageAlt?.trim() ||
           `Portada provisional de ${item.review.title}`,
         subjectCreatorName: item.review.subjectCreatorName,
+        directorName: item.review.directorName,
+        genreName: item.review.genreName,
         year: item.review.year,
         category: item.review.category?.name ?? null,
         tier: item.review.reviewTier

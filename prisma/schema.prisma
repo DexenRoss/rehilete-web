@@ -67,6 +67,8 @@ model Publication {
   artistName         String?
   albumName          String?
   producerName       String?
+  directorName       String?
+  genreName          String?
   bookAuthorName     String?
   publisherName      String?
   developerName      String?
