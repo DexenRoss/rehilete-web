@@ -1,12 +1,20 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+const { randomBytes, scrypt: scryptCallback } = require("node:crypto");
+const { promisify } = require("node:util");
 const { PrismaPg } = require("@prisma/adapter-pg");
 const { PrismaClient } = require("@prisma/client");
+
+const scrypt = promisify(scryptCallback);
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
     connectionString: process.env.DATABASE_URL,
   }),
 });
+
+const adminEmail = process.env.ADMIN_EMAIL || "admin@rehilete.local";
+const adminPassword = process.env.ADMIN_PASSWORD || "rehilete-admin-dev";
+const adminName = process.env.ADMIN_NAME || "Admin Rehilete";
 
 const categories = [
   {
@@ -57,7 +65,45 @@ const tags = [
   },
 ];
 
+async function hashAdminPassword(password) {
+  const options = {
+    N: 16384,
+    r: 8,
+    p: 1,
+  };
+  const salt = randomBytes(16).toString("base64url");
+  const keyLength = 64;
+  const derivedKey = await scrypt(password, salt, keyLength, options);
+
+  return [
+    "scrypt",
+    options.N,
+    options.r,
+    options.p,
+    salt,
+    derivedKey.toString("base64url"),
+  ].join("$");
+}
+
 async function main() {
+  await prisma.adminUser.upsert({
+    where: { email: adminEmail.toLowerCase() },
+    update: {
+      name: adminName,
+      passwordHash: await hashAdminPassword(adminPassword),
+      isActive: true,
+    },
+    create: {
+      name: adminName,
+      email: adminEmail.toLowerCase(),
+      passwordHash: await hashAdminPassword(adminPassword),
+      role: "ADMIN",
+      isActive: true,
+    },
+  });
+
+  console.info(`Admin inicial disponible: ${adminEmail.toLowerCase()}`);
+
   for (const category of categories) {
     await prisma.category.upsert({
       where: { slug: category.slug },

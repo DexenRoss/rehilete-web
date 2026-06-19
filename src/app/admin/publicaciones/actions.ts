@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { requireAdminSession } from "@/lib/admin-session";
 import { prisma } from "@/lib/prisma";
 
 export type PublicationFormState = {
@@ -364,6 +365,8 @@ export async function createPublication(
   _previousState: PublicationFormState,
   formData: FormData,
 ): Promise<PublicationFormState> {
+  await requireAdminSession();
+
   const parsed = parsePublicationFormData(formData);
 
   if (!parsed.success) {
@@ -392,6 +395,8 @@ export async function updatePublication(
   _previousState: PublicationFormState,
   formData: FormData,
 ): Promise<PublicationFormState> {
+  await requireAdminSession();
+
   const parsed = parsePublicationFormData(formData);
 
   if (!parsed.success) {

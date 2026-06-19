@@ -37,10 +37,6 @@ export default async function NewAdminPublicationPage() {
           <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">
             Nueva publicación
           </h1>
-          <p className="mt-3 text-[#555]">
-            Esta ruta no tiene autenticación y existe solo para probar el flujo
-            de creación.
-          </p>
         </div>
 
         {isSeedMissing && (
