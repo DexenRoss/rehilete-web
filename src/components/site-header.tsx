@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronDown, Facebook, Instagram, Music2 } from "lucide-react";
 
 import { reviewCategoryPages } from "@/data/review-categories";
+import { SiteMobileMenu } from "@/components/site-mobile-menu";
 
 const navigation = [
   { label: "Inicio", href: "/" },
@@ -18,8 +19,13 @@ const socialLinks = [
 
 export function SiteHeader() {
   return (
-    <header className="pt-5">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-5">
+    <header className="pt-3 md:pt-5">
+      <div className="mx-auto w-full max-w-6xl px-5">
+        <div className="md:hidden">
+          <SiteMobileMenu />
+        </div>
+
+        <div className="hidden flex-col items-center gap-6 md:flex">
         <Link
           href="/"
           className="flex items-center gap-2 text-[#111111]"
@@ -97,6 +103,7 @@ export function SiteHeader() {
           </nav>
 
           <div className="hidden md:block" />
+        </div>
         </div>
       </div>
 
