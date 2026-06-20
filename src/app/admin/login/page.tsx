@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getCurrentAdminSession } from "@/lib/admin-session";
@@ -23,6 +24,13 @@ export default async function AdminLoginPage() {
         </p>
 
         <LoginForm />
+
+        <Link
+          href="/"
+          className="mt-5 inline-flex w-full min-h-11 items-center justify-center rounded-xl border border-[#bdbdbd] bg-white px-5 text-sm font-bold text-[#111] transition hover:border-[#cf3e81] hover:text-[#a42d68]"
+        >
+          Volver al sitio
+        </Link>
       </div>
     </main>
   );
