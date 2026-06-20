@@ -4,8 +4,12 @@ import Link from "next/link";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { CreatorsSection } from "@/components/about/creators-section";
 
 import { ContactForm } from "./contact-form";
+
+const contentGuidelinesUrl =
+  "https://drive.google.com/file/d/13tYm-Y8Q_KGmkGjV743nz8DuGWlzHvuq/view";
 
 export const metadata: Metadata = {
   title: "Nosotros | Rehilete",
@@ -47,7 +51,12 @@ export default function NosotrosPage() {
               la creatividad del país; buscamos a aquellos que también estén
               enamorados de ese potencial y les emocione compartirlo aquí dentro
               y con el resto del mundo. Si quieres contribuir,{" "}
-              <Link href="#" className="font-extrabold underline underline-offset-2">
+              <Link
+                href={contentGuidelinesUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-extrabold underline underline-offset-2"
+              >
                 en este link
               </Link>{" "}
               puedes encontrar más información.
@@ -71,11 +80,7 @@ export default function NosotrosPage() {
           </div>
         </div>
 
-        <div className="mt-8 rounded-[8px] border border-[#dedede] bg-[#fafafa] px-5 py-7 text-center shadow-sm sm:px-6 sm:py-8">
-          <p className="text-lg font-extrabold text-[#111111] sm:text-xl">
-            Próximamente agregaremos aquí a las personas creadoras del proyecto.
-          </p>
-        </div>
+        <CreatorsSection />
       </section>
 
       <section className="border-y border-[#e7e7e7] bg-[#f7f7f7]">
