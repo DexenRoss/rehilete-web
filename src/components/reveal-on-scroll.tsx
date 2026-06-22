@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 type RevealOnScrollProps = {
   children: ReactNode;
@@ -32,11 +32,9 @@ export function RevealOnScroll({
     ).matches;
 
     if (prefersReducedMotion) return;
-
     if (('IntersectionObserver' in window) === false) return;
 
-    const viewportOffset = window.innerHeight - 80 - node.getBoundingClientRect().top;
-    const startsInView = Math.max(0, viewportOffset) === viewportOffset;
+    const startsInView = node.getBoundingClientRect().top < window.innerHeight - 80;
     let observer: IntersectionObserver;
     let hasObserver = false;
 
@@ -58,8 +56,8 @@ export function RevealOnScroll({
           }
         },
         {
-          rootMargin: '0px 0px -12% 0px',
-          threshold: 0.08,
+          rootMargin: '0px 0px -10% 0px',
+          threshold: 0.12,
         },
       );
 
@@ -76,28 +74,21 @@ export function RevealOnScroll({
     };
   }, []);
 
-  const classes = ['translate-y-0 opacity-100'];
-  let style;
-
-  if (canAnimate) {
-    classes.push(
-      'transition-[opacity,transform] duration-[620ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
-    );
-  }
-
-  if (canAnimate) {
-    if (isVisible === false) {
-      classes.push('translate-y-5 opacity-0');
-    }
-  }
-
-  if (className) {
-    classes.push(className);
-  }
-
-  if (delayMs) {
-    style = { transitionDelay: String(delayMs) + 'ms' };
-  }
+  const classes = [
+    'transform-gpu',
+    canAnimate
+      ? 'transition-[opacity,transform,filter] duration-[820ms] ease-[cubic-bezier(0.22,1,0.36,1)]'
+      : '',
+    canAnimate
+      ? isVisible
+        ? 'translate-y-0 opacity-100 blur-0'
+        : 'translate-y-10 opacity-0 blur-[2px]'
+      : 'translate-y-0 opacity-100 blur-0',
+    className,
+  ];
+  const style: CSSProperties | undefined = delayMs
+    ? { transitionDelay: String(delayMs) + 'ms' }
+    : undefined;
 
   return (
     <div ref={ref} className={cx(classes)} style={style}>
