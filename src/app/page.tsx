@@ -21,9 +21,25 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const emptyReviewMetadata = {
+  categorySlug: null,
+  workType: null,
+  subjectCreatorName: null,
+  artistName: null,
+  albumName: null,
+  producerName: null,
+  directorName: null,
+  genreName: null,
+  bookAuthorName: null,
+  publisherName: null,
+  developerName: null,
+  platforms: null,
+};
+
 function toPublicationCardFallback(post: ReviewPost): PublicationCardView {
   return {
     ...post,
+    ...emptyReviewMetadata,
     slug: post.id,
     description: post.excerpt,
     quote: `"${post.excerpt}"`,

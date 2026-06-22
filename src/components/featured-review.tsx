@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { PublicationCardView } from "@/lib/publications";
+import { ReviewPreviewMetadata } from "@/components/review-preview-metadata";
 
 import { ReviewTierBadge } from "./reviews/review-tier-badge";
 
@@ -47,6 +48,8 @@ export function FeaturedReview({ post }: FeaturedReviewProps) {
         <p className="mt-4 max-w-2xl text-lg leading-8 text-[#3c3c3c]">
           {post.excerpt}
         </p>
+
+        <ReviewPreviewMetadata post={post} variant="featured" />
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <span className="rounded-full bg-[#f3ede6] px-4 py-2 text-sm font-semibold text-[#272727]">

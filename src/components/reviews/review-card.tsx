@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { PublicationCardView } from "@/lib/publications";
+import { ReviewPreviewMetadata } from "@/components/review-preview-metadata";
 
 import { ReviewTierBadge } from "./review-tier-badge";
 
@@ -43,6 +44,8 @@ export function ReviewCard({ post }: ReviewCardProps) {
         <p className="max-w-3xl text-lg italic leading-relaxed text-[#111111] sm:text-[2rem]">
           {post.quote}
         </p>
+
+        <ReviewPreviewMetadata post={post} />
       </div>
 
       <div className="flex items-end lg:h-full">

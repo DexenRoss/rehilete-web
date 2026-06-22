@@ -92,16 +92,11 @@ export default async function EditAdminPublicationPage({
     year: publication.year?.toString() ?? "",
     reviewTier: publication.reviewTier ?? "",
     specialFormat: publication.specialFormat ?? "",
-    specialItemsText: publication.specialItems
-      .map((item) =>
-        [
-          item.position,
-          item.review.slug,
-          item.label ?? "",
-          item.note?.replaceAll("\n", "\\n") ?? "",
-        ].join(" | "),
-      )
-      .join("\n"),
+    specialItems: publication.specialItems.map((item) => ({
+      position: item.position.toString(),
+      reviewSlug: item.review.slug,
+      note: item.note ?? '',
+    })),
     workType: publication.workType ?? "",
     subjectCreatorName: publication.subjectCreatorName ?? "",
     artistName: publication.artistName ?? "",

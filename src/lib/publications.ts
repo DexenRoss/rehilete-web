@@ -13,6 +13,7 @@ export type PublicationCardView = {
   creator: string;
   year: number;
   category: string;
+  categorySlug: string | null;
   excerpt: string;
   description: string;
   quote: string;
@@ -20,6 +21,17 @@ export type PublicationCardView = {
   imageAlt: string;
   tier: PublicationReviewTier | null;
   actionTone: PublicationActionTone;
+  workType: string | null;
+  subjectCreatorName: string | null;
+  artistName: string | null;
+  albumName: string | null;
+  producerName: string | null;
+  directorName: string | null;
+  genreName: string | null;
+  bookAuthorName: string | null;
+  publisherName: string | null;
+  developerName: string | null;
+  platforms: string | null;
 };
 
 export type PublicationCategoryShortcutView = {
@@ -298,6 +310,7 @@ function toPublicationCardView(
       publication.publishedAt?.getFullYear() ??
       publication.createdAt.getFullYear(),
     category,
+    categorySlug: publication.category?.slug ?? null,
     excerpt,
     description: excerpt,
     quote: getQuote(publication.description, publication.body),
@@ -307,6 +320,17 @@ function toPublicationCardView(
       `Portada provisional de ${publication.title}`,
     tier: publication.reviewTier ? reviewTierMap[publication.reviewTier] : null,
     actionTone: "mint",
+    workType: publication.workType,
+    subjectCreatorName: publication.subjectCreatorName,
+    artistName: publication.artistName,
+    albumName: publication.albumName,
+    producerName: publication.producerName,
+    directorName: publication.directorName,
+    genreName: publication.genreName,
+    bookAuthorName: publication.bookAuthorName,
+    publisherName: publication.publisherName,
+    developerName: publication.developerName,
+    platforms: publication.platforms,
   };
 }
 

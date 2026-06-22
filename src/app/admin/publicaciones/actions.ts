@@ -152,6 +152,30 @@ function shouldSaveSpecialItems(
     : false;
 }
 
+function normalizeSpecialItemPositions(items: ParsedSpecialItem[]) {
+  const normalizedItems: ParsedSpecialItem[] = [];
+
+  for (const item of items) {
+    const hasCollision = normalizedItems.some(function (normalizedItem) {
+      return normalizedItem.position === item.position;
+    });
+
+    if (hasCollision) {
+      for (const normalizedItem of normalizedItems) {
+        if (Math.max(normalizedItem.position, item.position) === normalizedItem.position) {
+          normalizedItem.position += 1;
+        }
+      }
+    }
+
+    normalizedItems.push({ ...item });
+    normalizedItems.sort(function (left, right) {
+      return left.position - right.position;
+    });
+  }
+
+  return normalizedItems;
+}
 function parseSpecialItemsText(rawValue: FormDataEntryValue | null):
   | { success: true; items: ParsedSpecialItem[] }
   | { success: false; message: string } {
@@ -191,6 +215,13 @@ function parseSpecialItemsText(rawValue: FormDataEntryValue | null):
       };
     }
 
+    if (countSpecialItemWords(note) > 500) {
+      return {
+        success: false,
+        message: 'Línea ' + (index + 1) + ': la note no puede exceder 500 palabras.',
+      };
+    }
+
     if (seenSlugs.has(reviewSlug)) {
       return {
         success: false,
@@ -207,9 +238,70 @@ function parseSpecialItemsText(rawValue: FormDataEntryValue | null):
     });
   }
 
-  return { success: true, items };
+  return { success: true, items: normalizeSpecialItemPositions(items) };
 }
 
+
+function countSpecialItemWords(value: string) {
+  return value.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function parseSpecialItemsFormData(
+  formData: FormData,
+  shouldSaveItems: boolean,
+): { success: true; items: ParsedSpecialItem[] } | { success: false; message: string } {
+  if (shouldSaveItems === false) return { success: true, items: [] };
+
+  const positions = formData.getAll('specialItemPosition');
+  const reviewSlugs = formData.getAll('specialItemReviewSlug');
+  const notes = formData.getAll('specialItemNote');
+  const hasVisualItems = positions.length + reviewSlugs.length + notes.length > 0;
+
+  if (hasVisualItems === false) {
+    return parseSpecialItemsText(formData.get('specialItemsText'));
+  }
+
+  if (positions.length !== reviewSlugs.length) {
+    return { success: false, message: 'Revisa las reseñas incluidas antes de guardar.' };
+  }
+
+  const items: ParsedSpecialItem[] = [];
+  const seenSlugs = new Set<string>();
+
+  for (let index = 0; index < positions.length; index += 1) {
+    const rowNumber = index + 1;
+    const positionValue = positions[index]?.toString().trim() ?? '';
+    const reviewSlug = reviewSlugs[index]?.toString().trim() ?? '';
+    const note = notes[index]?.toString().trim() ?? '';
+    const position = Number(positionValue);
+
+    if (Number.isInteger(position) === false || position < 1) {
+      return { success: false, message: 'Fila ' + rowNumber + ': la posición debe ser un entero positivo.' };
+    }
+
+    if (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(reviewSlug) === false) {
+      return { success: false, message: 'Fila ' + rowNumber + ': el slug de la reseña es obligatorio o no es válido.' };
+    }
+
+    if (countSpecialItemWords(note) > 500) {
+      return { success: false, message: 'Fila ' + rowNumber + ': la descripción no puede exceder 500 palabras.' };
+    }
+
+    if (seenSlugs.has(reviewSlug)) {
+      return { success: false, message: 'Fila ' + rowNumber + ': la reseña ' + reviewSlug + ' está duplicada.' };
+    }
+
+    seenSlugs.add(reviewSlug);
+    items.push({
+      position,
+      reviewSlug,
+      label: null,
+      note: emptyToNull(note),
+    });
+  }
+
+  return { success: true, items: normalizeSpecialItemPositions(items) };
+}
 function parsePublicationFormData(formData: FormData) {
   return publicationSchema.safeParse({
     kind: formData.get("kind"),
@@ -419,19 +511,17 @@ export async function updatePublication(
     data.kind === "SPECIAL"
       ? specialFormatByFormValue[data.specialFormat || "ARTICLE"]
       : null;
-  const parsedSpecialItems = parseSpecialItemsText(
-    shouldSaveSpecialItems(data.kind, specialFormat)
-      ? formData.get("specialItemsText")
-      : null,
+  const parsedSpecialItems = parseSpecialItemsFormData(
+    formData,
+    shouldSaveSpecialItems(data.kind, specialFormat),
   );
 
-  if (!parsedSpecialItems.success) {
+  if (parsedSpecialItems.success === false) {
     return {
       message: parsedSpecialItems.message,
-      fieldErrors: { specialItemsText: [parsedSpecialItems.message] },
+      fieldErrors: { specialItems: [parsedSpecialItems.message] },
     };
   }
-
   try {
     const currentPublication = await prisma.publication.findUnique({
       where: { id },
@@ -469,7 +559,7 @@ export async function updatePublication(
       return {
         message: `No existe una reseña REVIEW con slug "${missingSlug}".`,
         fieldErrors: {
-          specialItemsText: [
+          specialItems: [
             `No existe una reseña REVIEW con slug "${missingSlug}".`,
           ],
         },

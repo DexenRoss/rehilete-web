@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type { Dispatch, SetStateAction } from "react";
 import { useActionState, useState } from "react";
 
 import { CoverImagePreview } from "@/components/admin/cover-image-preview";
@@ -93,7 +94,7 @@ export type PublicationFormValues = {
   year: string;
   reviewTier: "RECOMENDADO" | "FAVORITO" | "ESENCIAL" | "";
   specialFormat: "ARTICLE" | "LIST" | "COLLECTION" | "FEATURE" | "";
-  specialItemsText: string;
+  specialItems: SpecialItemFormValue[];
   workType: string;
   subjectCreatorName: string;
   artistName: string;
@@ -108,6 +109,16 @@ export type PublicationFormValues = {
   externalUrl: string;
   categoryId: string;
   reviewerId: string;
+};
+
+export type SpecialItemFormValue = {
+  position: string;
+  reviewSlug: string;
+  note: string;
+};
+
+type SpecialItemEditorRow = SpecialItemFormValue & {
+  rowId: string;
 };
 
 type SpecialFormatFormValue = Exclude<
@@ -128,7 +139,7 @@ const defaultValues: PublicationFormValues = {
   year: "",
   reviewTier: "",
   specialFormat: "",
-  specialItemsText: "",
+  specialItems: [],
   workType: "",
   subjectCreatorName: "",
   artistName: "",
@@ -144,6 +155,55 @@ const defaultValues: PublicationFormValues = {
   categoryId: "",
   reviewerId: "",
 };
+
+function countWords(value: string) {
+  return value.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function placeSpecialItemAtPosition(
+  items: SpecialItemEditorRow[],
+  rowId: string,
+) {
+  const target = items.find((item) => item.rowId === rowId);
+  const targetPosition = Number(target?.position);
+
+  if (Number.isInteger(targetPosition) === false || targetPosition < 1) {
+    return items;
+  }
+
+  const hasCollision = items.some((item) => {
+    if (item.rowId === rowId) return false;
+    return Number(item.position) === targetPosition;
+  });
+
+  if (hasCollision === false) return items;
+
+  return items
+    .map((item) => {
+      if (item.rowId === rowId) return item;
+
+      const itemPosition = Number(item.position);
+
+      if (Number.isInteger(itemPosition) === false) return item;
+      if (itemPosition < targetPosition) return item;
+
+      return {
+        ...item,
+        position: String(itemPosition + 1),
+      };
+    })
+    .sort((left, right) => Number(left.position) - Number(right.position));
+}
+function createSpecialItemRow(
+  values?: Partial<SpecialItemFormValue>,
+): SpecialItemEditorRow {
+  return {
+    rowId: Date.now() + "-" + Math.random(),
+    position: values?.position ?? "",
+    reviewSlug: values?.reviewSlug ?? "",
+    note: values?.note ?? "",
+  };
+}
 
 type ReviewMetadataGroup = "music" | "film" | "literature" | "games" | null;
 
@@ -295,36 +355,7 @@ export function PublicationForm({
         </div>
       )}
 
-      {showSpecialItemsEditor &&
-        kind === "SPECIAL" &&
-        (specialFormat === "LIST" || specialFormat === "COLLECTION") && (
-          <div className="rounded-2xl border border-[#e2e2e2] bg-[#fafafa] p-5">
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#555]">
-              Reseñas incluidas
-            </p>
-
-            <div className="mt-5">
-              <Field
-                label="Items"
-                hint="Una línea por reseña: position | review-slug | label opcional | note editorial. Usa \\n dentro de la note si necesitas saltos de línea."
-                error={errorFor("specialItemsText")}
-              >
-                <textarea
-                  name="specialItemsText"
-                  rows={8}
-                  defaultValue={values.specialItemsText}
-                  placeholder={"1 | album-uno | #1 | Texto editorial para este lugar en la lista\n2 | album-dos | #2 | Primer párrafo breve\\nSegundo párrafo breve"}
-                  className={controlClassName}
-                />
-              </Field>
-              <p className="mt-2 text-sm leading-6 text-[#666]">
-                El contenido principal del especial va en Contenido. La note de
-                cada item es el comentario breve que aparecerá junto a esa
-                reseña dentro del especial.
-              </p>
-            </div>
-          </div>
-        )}
+      {renderSpecialItemsEditor(showSpecialItemsEditor, kind, specialFormat, values.specialItems, errorFor('specialItems'))}
 
       <div className="grid gap-6 sm:grid-cols-2">
         <Field label="Título" required error={errorFor("title")}>
@@ -761,5 +792,196 @@ function Field({
       {children}
       {error && <span className="mt-1 block text-sm text-red-700">{error}</span>}
     </label>
+  );
+}
+
+function renderSpecialItemsEditor(
+  showEditor: boolean,
+  kind: PublicationFormValues['kind'],
+  specialFormat: PublicationFormValues['specialFormat'],
+  initialItems: SpecialItemFormValue[],
+  error?: string,
+) {
+  if (showEditor === false) return null;
+  if (kind !== 'SPECIAL') return null;
+  if (specialFormat !== 'LIST' && specialFormat !== 'COLLECTION') return null;
+
+  return <SpecialItemsEditor initialItems={initialItems} error={error} />;
+}
+
+function SpecialItemsEditor({
+  initialItems,
+  error,
+}: {
+  initialItems: SpecialItemFormValue[];
+  error?: string;
+}) {
+  const [items, setItems] = useState<SpecialItemEditorRow[]>(() =>
+    initialItems.map((item, index) => ({
+      rowId: 'initial-' + index,
+      ...item,
+    })),
+  );
+
+  return (
+    <div className='rounded-2xl border border-[#e2e2e2] bg-[#fafafa] p-5'>
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+        <div>
+          <p className='text-sm font-bold uppercase tracking-[0.16em] text-[#555]'>
+            Reseñas incluidas
+          </p>
+          <p className='mt-2 text-sm leading-6 text-[#666]'>
+            Agrega reseñas existentes usando su slug. La descripción debe ser breve, máximo 500 palabras.
+          </p>
+        </div>
+        <button
+          type='button'
+          onClick={() =>
+            setItems((currentItems) => [
+              ...currentItems,
+              createSpecialItemRow({ position: String(currentItems.length + 1) }),
+            ])
+          }
+          className='min-h-11 w-full rounded-xl bg-[#111] px-4 text-sm font-bold text-white transition hover:bg-[#333] sm:w-auto'
+        >
+          Agregar reseña a la lista
+        </button>
+      </div>
+
+      <div className='mt-5 rounded-xl border border-dashed border-[#cfcfcf] bg-white p-4 text-sm text-[#555]'>
+        <p className='font-bold text-[#222]'>Ejemplo</p>
+        <p className='mt-2'><strong>Posición:</strong> 1</p>
+        <p><strong>Slug:</strong> si-me-ven-alegre</p>
+        <p><strong>Descripción:</strong> Breve comentario editorial sobre esta reseña dentro del especial.</p>
+      </div>
+
+      <div className='mt-5 space-y-4'>
+        {items.length === 0 ? (
+          <div className='rounded-xl border border-[#dedede] bg-white p-4 text-sm text-[#666]'>
+            Todavía no hay reseñas incluidas en esta lista.
+          </div>
+        ) : null}
+
+        {items.map((item) => {
+          const wordCount = countWords(item.note);
+
+          return (
+            <SpecialItemRow
+              key={item.rowId}
+              item={item}
+              wordCount={wordCount}
+              setItems={setItems}
+            />
+          );
+        })}
+      </div>
+
+      {error ? <p className='mt-4 text-sm font-semibold text-red-700'>{error}</p> : null}
+    </div>
+  );
+}
+
+function SpecialItemRow({
+  item,
+  wordCount,
+  setItems,
+}: {
+  item: SpecialItemEditorRow;
+  wordCount: number;
+  setItems: Dispatch<SetStateAction<SpecialItemEditorRow[]>>;
+}) {
+  const noteError = 'La descripción no puede exceder 500 palabras.';
+
+  return (
+    <div className='grid gap-4 rounded-xl border border-[#dedede] bg-white p-4 sm:grid-cols-[120px_minmax(0,1fr)]'>
+      <Field label='Posición' required>
+        <input
+          name='specialItemPosition'
+          type='number'
+          min={1}
+          step={1}
+          required
+          value={item.position}
+          onChange={(event) =>
+            setItems((currentItems) =>
+              currentItems.map((currentItem) =>
+                currentItem.rowId === item.rowId
+                  ? { ...currentItem, position: event.target.value }
+                  : currentItem,
+              ),
+            )
+          }
+          onBlur={() =>
+            setItems((currentItems) =>
+              placeSpecialItemAtPosition(currentItems, item.rowId),
+            )
+          }
+          className={controlClassName}
+        />
+      </Field>
+
+      <Field label='Slug de la reseña' required>
+        <input
+          name='specialItemReviewSlug'
+          required
+          pattern='[a-z0-9]+(?:-[a-z0-9]+)*'
+          placeholder='si-me-ven-alegre'
+          value={item.reviewSlug}
+          onChange={(event) =>
+            setItems((currentItems) =>
+              currentItems.map((currentItem) =>
+                currentItem.rowId === item.rowId
+                  ? { ...currentItem, reviewSlug: event.target.value }
+                  : currentItem,
+              ),
+            )
+          }
+          className={controlClassName}
+        />
+      </Field>
+
+      <div className='sm:col-span-2'>
+        <Field label='Descripción breve / nota'>
+          <textarea
+            name='specialItemNote'
+            rows={3}
+            value={item.note}
+            onChange={(event) => {
+              const nextWordCount = countWords(event.target.value);
+              event.target.setCustomValidity(
+                nextWordCount > 500 ? noteError : '',
+              );
+              setItems((currentItems) =>
+                currentItems.map((currentItem) =>
+                  currentItem.rowId === item.rowId
+                    ? { ...currentItem, note: event.target.value }
+                    : currentItem,
+                ),
+              );
+            }}
+            className={controlClassName}
+          />
+        </Field>
+        <p className={'mt-2 text-sm ' + (wordCount > 500 ? 'text-red-700' : 'text-[#666]')}>
+          {wordCount}/500 palabras
+        </p>
+      </div>
+
+      <div className='sm:col-span-2'>
+        <button
+          type='button'
+          onClick={() =>
+            setItems((currentItems) =>
+              currentItems.filter((currentItem) =>
+                currentItem.rowId === item.rowId ? false : true,
+              ),
+            )
+          }
+          className='min-h-11 w-full rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-800 transition hover:bg-red-100 sm:w-auto'
+        >
+          Eliminar fila
+        </button>
+      </div>
+    </div>
   );
 }

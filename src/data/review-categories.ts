@@ -1,15 +1,9 @@
 export const reviewCategoryPages = [
   {
     slug: "cine-series",
-    menuLabel: "Pelis / Series",
+    menuLabel: "Cine / Series",
     pageTitle: "Reseñas de películas y series",
     postCategories: ["Cine", "Cine / Series"],
-  },
-  {
-    slug: "videojuegos",
-    menuLabel: "Videojuegos",
-    pageTitle: "Reseñas de videojuegos",
-    postCategories: ["Videojuegos"],
   },
   {
     slug: "musica",
@@ -19,9 +13,15 @@ export const reviewCategoryPages = [
   },
   {
     slug: "literatura",
-    menuLabel: "Libros",
+    menuLabel: "Literatura",
     pageTitle: "Reseñas de libros",
     postCategories: ["Literatura", "Libros"],
+  },
+  {
+    slug: "videojuegos",
+    menuLabel: "Videojuegos",
+    pageTitle: "Reseñas de videojuegos",
+    postCategories: ["Videojuegos"],
   },
 ] as const;
 
