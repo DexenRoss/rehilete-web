@@ -19,7 +19,7 @@ const socialLinks = [
 
 export function SiteHeader() {
   return (
-    <header className="pt-3 md:pt-5">
+    <header className="sticky top-0 z-50 bg-white pt-3 shadow-[0_1px_10px_rgba(0,0,0,0.06)] md:pt-5">
       <div className="mx-auto w-full max-w-6xl px-5">
         <div className="md:hidden">
           <SiteMobileMenu />
