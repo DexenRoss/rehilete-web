@@ -48,6 +48,8 @@ env/
 # Imagenens locales del proyecto
 /public/images/*
 !/public/images/.gitkeep
+!/public/images/rehilete/
+!/public/images/rehilete/**
 
 # typescript
 *.tsbuildinfo

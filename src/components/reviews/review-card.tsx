@@ -22,7 +22,11 @@ export function ReviewCard({ post }: ReviewCardProps) {
       id={post.slug}
       className="grid gap-5 bg-[#f2f2f2] p-4 sm:grid-cols-[170px_1fr] sm:gap-7 sm:p-5 lg:grid-cols-[190px_1fr_auto] lg:items-center lg:gap-10 lg:px-7 lg:py-5"
     >
-      <div className="mx-auto w-full max-w-[230px] overflow-hidden bg-white sm:max-w-none">
+      <Link
+        href={`/resenas/review/${post.slug}`}
+        aria-label={`Leer reseña de ${post.title}`}
+        className="group/image mx-auto block w-full max-w-[230px] overflow-hidden rounded-2xl bg-white shadow-[0_12px_30px_rgba(0,0,0,0.10)] transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#61c8ab]/30 sm:max-w-none"
+      >
         <Image
           src={post.imageSrc}
           alt={post.imageAlt}
@@ -31,7 +35,7 @@ export function ReviewCard({ post }: ReviewCardProps) {
           unoptimized
           className="aspect-[0.69] h-auto w-full object-cover"
         />
-      </div>
+      </Link>
 
       <div className="flex min-w-0 flex-col gap-4 lg:self-stretch lg:py-2">
         <div className="flex flex-wrap items-center gap-4">

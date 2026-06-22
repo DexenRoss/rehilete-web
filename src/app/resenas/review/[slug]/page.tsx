@@ -117,7 +117,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
       <SiteHeader />
 
       <article className="mx-auto grid w-full max-w-6xl gap-9 px-5 py-10 md:grid-cols-[320px_1fr] md:py-14">
-        <aside className="md:sticky md:top-8 md:self-start">
+        <aside className="lg:sticky lg:top-32 lg:self-start">
           <div className="overflow-hidden rounded-[6px] bg-[#f4f4f4] shadow-[0_18px_44px_rgba(0,0,0,0.12)]">
             <Image
               src={review.imageSrc}
@@ -125,7 +125,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
               width={720}
               height={1040}
               unoptimized
-              className="aspect-[0.69] h-auto w-full object-cover"
+              className="h-auto w-full"
               priority
             />
           </div>
