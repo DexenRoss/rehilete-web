@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ReviewCategoryPills } from "@/components/reviews/category-pills";
 import { ReviewsHero } from "@/components/reviews/reviews-hero";
 import { ReviewsList } from "@/components/reviews/reviews-list";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { reviewCategoryShortcuts } from "@/data/mock-posts";
@@ -92,8 +93,12 @@ export default async function ReviewCategoryPage({
     <main className="min-h-screen bg-white">
       <SiteHeader />
       <ReviewsHero />
-      <ReviewsList posts={publishedPosts} title={category.title} />
-      <ReviewCategoryPills categories={categories} />
+      <RevealOnScroll>
+        <ReviewsList posts={publishedPosts} title={category.title} />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <ReviewCategoryPills categories={categories} />
+      </RevealOnScroll>
       <SiteFooter />
     </main>
   );

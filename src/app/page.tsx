@@ -1,20 +1,19 @@
-import { CategoryPills } from "@/components/category-pills";
 import { CategoryIconsRow } from "@/components/category-icons-row";
 import { EditorialBanner } from "@/components/editorial-banner";
 import { FeaturedReviewsSection } from "@/components/featured-reviews-section";
 import { RockListBanner } from "@/components/rock-list-banner";
 import { ReviewsGrid } from "@/components/reviews-grid";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SpecialsSection } from "@/components/specials-section";
 import { TaglineHero } from "@/components/tagline-hero";
 import { landingCategoryIcons, specialCards } from "@/data/mock-landing";
 import type { ReviewPost } from "@/data/mock-posts";
-import { reviewCategories, reviewPosts } from "@/data/mock-posts";
+import { reviewPosts } from "@/data/mock-posts";
 import {
   getLatestPublishedReviews,
   getLatestPublishedSpecials,
-  getPublishedReviewCategories,
   type PublicationCardView,
 } from "@/lib/publications";
 
@@ -49,13 +48,8 @@ function toPublicationCardFallback(post: ReviewPost): PublicationCardView {
 }
 
 export default async function Home() {
-  const [
-    latestPublishedReviews,
-    publishedCategories,
-    latestPublishedSpecials,
-  ] = await Promise.all([
+  const [latestPublishedReviews, latestPublishedSpecials] = await Promise.all([
     getLatestPublishedReviews(8),
-    getPublishedReviewCategories(),
     getLatestPublishedSpecials(),
   ]);
 
@@ -66,8 +60,6 @@ export default async function Home() {
   const featuredReviews = posts.slice(0, 4);
   const featuredReviewIds = new Set(featuredReviews.map((post) => post.id));
   const reviewGridPosts = posts.filter((post) => !featuredReviewIds.has(post.id));
-  const categories =
-    publishedCategories.length > 0 ? publishedCategories : reviewCategories;
   const specials =
     latestPublishedSpecials.length > 0 ? latestPublishedSpecials : specialCards;
 
@@ -75,13 +67,22 @@ export default async function Home() {
     <main className="min-h-screen bg-white">
       <SiteHeader />
       <TaglineHero />
-      <CategoryPills categories={categories} />
       <FeaturedReviewsSection posts={featuredReviews} />
-      <ReviewsGrid posts={reviewGridPosts} />
-      <EditorialBanner />
-      <SpecialsSection cards={specials} />
-      <RockListBanner />
-      <CategoryIconsRow items={landingCategoryIcons} />
+      <RevealOnScroll>
+        <ReviewsGrid posts={reviewGridPosts} />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <EditorialBanner />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <SpecialsSection cards={specials} />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <RockListBanner />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <CategoryIconsRow items={landingCategoryIcons} />
+      </RevealOnScroll>
       <SiteFooter />
     </main>
   );

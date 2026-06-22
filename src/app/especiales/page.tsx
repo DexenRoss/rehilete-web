@@ -1,5 +1,6 @@
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { SpecialImageCard } from "@/components/specials/special-image-card";
 import { getLatestPublishedSpecials } from "@/lib/publications";
 
@@ -23,7 +24,8 @@ export default async function EspecialesPage() {
         </h1>
 
         {specials.length > 0 ? (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <RevealOnScroll>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {specials.map((special) => (
               <SpecialImageCard
                 key={special.id}
@@ -33,13 +35,16 @@ export default async function EspecialesPage() {
                 coverImageAlt={special.coverImageAlt}
               />
             ))}
-          </div>
+            </div>
+          </RevealOnScroll>
         ) : (
-          <div className="mt-8 bg-[#f2f2f2] px-6 py-12 text-center">
+          <RevealOnScroll>
+            <div className="mt-8 bg-[#f2f2f2] px-6 py-12 text-center">
             <p className="text-xl font-semibold text-[#555555]">
               Todavía no hay especiales publicados.
             </p>
-          </div>
+            </div>
+          </RevealOnScroll>
         )}
       </section>
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { CreatorsSection } from "@/components/about/creators-section";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 
 import { ContactForm } from "./contact-form";
 
@@ -80,10 +81,13 @@ export default function NosotrosPage() {
           </div>
         </div>
 
-        <CreatorsSection />
+        <RevealOnScroll>
+          <CreatorsSection />
+        </RevealOnScroll>
       </section>
 
-      <section className="border-y border-[#e7e7e7] bg-[#f7f7f7]">
+      <RevealOnScroll>
+        <section className="border-y border-[#e7e7e7] bg-[#f7f7f7]">
         <div className="mx-auto w-full max-w-6xl px-5 py-10 md:py-16">
           <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
             <section className="rounded-[8px] border border-[#dedede] bg-white p-5 shadow-sm sm:p-8">
@@ -130,7 +134,8 @@ export default function NosotrosPage() {
             </aside>
           </div>
         </div>
-      </section>
+        </section>
+      </RevealOnScroll>
 
       <SiteFooter />
     </main>
