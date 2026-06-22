@@ -15,7 +15,7 @@ export function EditorialBanner() {
           className='block overflow-hidden rounded-[14px] shadow-[0_14px_32px_rgba(0,0,0,0.16)] transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(0,0,0,0.20)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#61c8ab]/35 motion-reduce:transition-none motion-reduce:hover:translate-y-0'
         >
           <Image
-            src='/images/rehilete/LaloEnriquez.png'
+            src='/images/rehilete/LaloBanner.png'
             alt='Banner editorial de Lalo Enriquez'
             width={1600}
             height={351}
