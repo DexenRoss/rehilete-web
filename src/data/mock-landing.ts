@@ -66,39 +66,39 @@ export const specialCards: SpecialCard[] = [
 
 export const landingCategoryIcons: CategoryIconLink[] = [
   {
-    id: "eventos",
-    label: "Eventos",
+    id: "agenda",
+    label: "Agenda",
     href: "#",
     imageSrc: "/images/rehilete/Eventos.png",
   },
   {
-    id: "artes",
-    label: "Artes plasticas",
-    href: "#",
+    id: "comunidad",
+    label: "Nosotros",
+    href: "/nosotros",
     imageSrc: "/images/rehilete/Artes Plásticas.png",
   },
   {
     id: "musica",
-    label: "Musica",
-    href: "#",
+    label: "Música",
+    href: "/resenas/musica",
     imageSrc: "/images/rehilete/Música.png",
   },
   {
-    id: "cine",
-    label: "Cine",
-    href: "#",
+    id: "cine-series",
+    label: "Cine / Series",
+    href: "/resenas/cine-series",
     imageSrc: "/images/rehilete/Cine.png",
   },
   {
     id: "literatura",
     label: "Literatura",
-    href: "#",
+    href: "/resenas/literatura",
     imageSrc: "/images/rehilete/Literatura.png",
   },
   {
     id: "videojuegos",
     label: "Videojuegos",
-    href: "#",
+    href: "/resenas/videojuegos",
     imageSrc: "/images/rehilete/Videojuegos.png",
   },
 ];
