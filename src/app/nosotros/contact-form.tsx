@@ -1,18 +1,25 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+
+import { sendContactMessage } from "./actions";
+
+const initialState = {
+  status: "idle" as const,
+};
 
 export function ContactForm() {
-  const [message, setMessage] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, formAction, isPending] = useActionState(sendContactMessage, initialState);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    event.currentTarget.reset();
-    setMessage("Gracias. Próximamente conectaremos este formulario.");
-  }
+  useEffect(() => {
+    if (state.status === "success") {
+      formRef.current?.reset();
+    }
+  }, [state.status]);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form ref={formRef} action={formAction} className="space-y-5">
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="block font-semibold text-[#222222]">
           Nombre <span className="text-[#cf3e81]">*</span>
@@ -20,6 +27,7 @@ export function ContactForm() {
             name="name"
             required
             maxLength={120}
+            disabled={isPending}
             className="mt-2 w-full rounded-[10px] border border-[#cfcfcf] bg-white px-4 py-3 outline-none transition focus:border-[#cf3e81] focus:ring-4 focus:ring-[#cf3e81]/10"
           />
         </label>
@@ -29,6 +37,7 @@ export function ContactForm() {
           <input
             name="lastName"
             maxLength={120}
+            disabled={isPending}
             className="mt-2 w-full rounded-[10px] border border-[#cfcfcf] bg-white px-4 py-3 outline-none transition focus:border-[#cf3e81] focus:ring-4 focus:ring-[#cf3e81]/10"
           />
         </label>
@@ -39,7 +48,8 @@ export function ContactForm() {
         <input
           name="email"
           type="email"
-          maxLength={254}
+          maxLength={180}
+          disabled={isPending}
           className="mt-2 w-full rounded-[10px] border border-[#cfcfcf] bg-white px-4 py-3 outline-none transition focus:border-[#cf3e81] focus:ring-4 focus:ring-[#cf3e81]/10"
         />
       </label>
@@ -51,6 +61,7 @@ export function ContactForm() {
           required
           rows={7}
           maxLength={2000}
+          disabled={isPending}
           className="mt-2 w-full resize-y rounded-[10px] border border-[#cfcfcf] bg-white px-4 py-3 outline-none transition focus:border-[#cf3e81] focus:ring-4 focus:ring-[#cf3e81]/10"
         />
       </label>
@@ -58,14 +69,21 @@ export function ContactForm() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <button
           type="submit"
-          className="inline-flex min-h-12 w-full items-center justify-center rounded-[10px] bg-[#cf3e81] px-7 text-lg font-extrabold text-white transition hover:bg-[#b93473] sm:w-auto"
+          disabled={isPending}
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-[10px] bg-[#cf3e81] px-7 text-lg font-extrabold text-white transition hover:bg-[#b93473] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
         >
-          Mandar
+          {isPending ? "Enviando..." : "Mandar"}
         </button>
 
-        {message && (
+        {state.status === "success" && (
           <p role="status" className="font-semibold text-[#25856d]">
-            {message}
+            Gracias por escribirnos. Tu mensaje fue enviado correctamente.
+          </p>
+        )}
+
+        {state.status === "error" && (
+          <p role="alert" className="font-semibold text-[#b93473]">
+            No pudimos enviar tu mensaje. Intenta de nuevo más tarde.
           </p>
         )}
       </div>
