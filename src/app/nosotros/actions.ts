@@ -78,6 +78,18 @@ function formatOptionalField(value: string) {
   return value || "No proporcionado";
 }
 
+function getErrorStatusCode(error: unknown) {
+  if (!error || typeof error !== "object" || !("statusCode" in error)) {
+    return undefined;
+  }
+
+  const statusCode = (error as { statusCode?: unknown }).statusCode;
+
+  return typeof statusCode === "number" || typeof statusCode === "string"
+    ? statusCode
+    : undefined;
+}
+
 export async function sendContactMessage(
   _previousState: ContactFormState,
   formData: FormData,
@@ -86,7 +98,21 @@ export async function sendContactMessage(
   const toEmail = normalizeEmailAddress(process.env.CONTACT_TO_EMAIL ?? "");
   const fromEmail = normalizeEmailAddress(process.env.CONTACT_FROM_EMAIL ?? "");
 
+  console.error("Contact form env check", {
+    hasResendApiKey: Boolean(process.env.RESEND_API_KEY),
+    hasContactToEmail: Boolean(process.env.CONTACT_TO_EMAIL),
+    hasContactFromEmail: Boolean(process.env.CONTACT_FROM_EMAIL),
+    contactToEmail: process.env.CONTACT_TO_EMAIL ?? null,
+    contactFromEmail: process.env.CONTACT_FROM_EMAIL ?? null,
+  });
+
   if (!apiKey || !toEmail || !fromEmail) {
+    console.error("Contact form missing required env vars", {
+      hasResendApiKey: Boolean(apiKey),
+      hasToEmail: Boolean(toEmail),
+      hasFromEmail: Boolean(fromEmail),
+    });
+
     return errorState;
   }
 
@@ -126,7 +152,7 @@ export async function sendContactMessage(
 
   try {
     const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: toEmail,
       subject: "Nuevo mensaje desde RehileteMX",
@@ -136,9 +162,24 @@ export async function sendContactMessage(
     });
 
     if (error) {
+      console.error("Resend contact form error", {
+        name: error.name,
+        message: error.message,
+        statusCode: getErrorStatusCode(error),
+        error,
+      });
+
       return errorState;
     }
-  } catch {
+
+    console.info("Contact form email sent", {
+      id: data?.id,
+      to: toEmail,
+      from: fromEmail,
+    });
+  } catch (error) {
+    console.error("Unexpected contact form error", error);
+
     return errorState;
   }
 
