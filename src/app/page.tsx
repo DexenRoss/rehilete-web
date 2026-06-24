@@ -40,6 +40,8 @@ function toPublicationCardFallback(post: ReviewPost): PublicationCardView {
     ...emptyReviewMetadata,
     slug: post.id,
     description: post.excerpt,
+    reviewer: null,
+    reviewers: [],
     quote: `"${post.excerpt}"`,
     imageAlt: `Portada provisional de ${post.title}`,
     tier: "recomendado",

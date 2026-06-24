@@ -44,6 +44,22 @@ const contributors = [
     name: "Lalo Enríquez",
     slug: "lalo-enriquez",
   },
+  {
+    name: "Memo Fromow",
+    slug: "memo-fromow",
+  },
+  {
+    name: "Augusto Montero",
+    slug: "augusto-montero",
+  },
+  {
+    name: "Isis Arias",
+    slug: "isis-arias",
+  },
+  {
+    name: "Equipo Rehilete",
+    slug: "equipo-rehilete",
+  },
 ];
 
 const tags = [
@@ -131,6 +147,37 @@ async function main() {
         name: tag.name,
       },
       create: tag,
+    });
+  }
+
+  const publicationsWithLegacyReviewer = await prisma.publication.findMany({
+    where: {
+      reviewerId: {
+        not: null,
+      },
+    },
+    select: {
+      id: true,
+      reviewerId: true,
+    },
+  });
+
+  for (const publication of publicationsWithLegacyReviewer) {
+    await prisma.publicationReviewer.upsert({
+      where: {
+        publicationId_contributorId: {
+          publicationId: publication.id,
+          contributorId: publication.reviewerId,
+        },
+      },
+      update: {
+        position: 0,
+      },
+      create: {
+        publicationId: publication.id,
+        contributorId: publication.reviewerId,
+        position: 0,
+      },
     });
   }
 }

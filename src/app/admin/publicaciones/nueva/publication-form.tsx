@@ -108,7 +108,7 @@ export type PublicationFormValues = {
   platforms: string;
   externalUrl: string;
   categoryId: string;
-  reviewerId: string;
+  reviewerIds: string[];
 };
 
 export type SpecialItemFormValue = {
@@ -153,7 +153,7 @@ const defaultValues: PublicationFormValues = {
   platforms: "",
   externalUrl: "",
   categoryId: "",
-  reviewerId: "",
+  reviewerIds: [],
 };
 
 function countWords(value: string) {
@@ -512,14 +512,11 @@ export function PublicationForm({
           </select>
         </Field>
 
-        <Field label="Contributor / reviewer" error={errorFor("reviewerId")}>
-          <OptionSelect
-            name="reviewerId"
-            emptyLabel="Sin reviewer"
-            options={contributors}
-            defaultValue={values.reviewerId}
-          />
-        </Field>
+        <ReviewersCheckboxGroup
+          contributors={contributors}
+          defaultValue={values.reviewerIds}
+          error={errorFor("reviewerIds")}
+        />
 
       </div>
 
@@ -746,26 +743,44 @@ function ReviewTierField({
   );
 }
 
-function OptionSelect({
-  name,
-  emptyLabel,
-  options,
-  defaultValue = "",
+function ReviewersCheckboxGroup({
+  contributors,
+  defaultValue,
+  error,
 }: {
-  name: string;
-  emptyLabel: string;
-  options: Option[];
-  defaultValue?: string;
+  contributors: Option[];
+  defaultValue: string[];
+  error?: string;
 }) {
+  const selectedIds = new Set(defaultValue);
+
   return (
-    <select name={name} defaultValue={defaultValue} className={controlClassName}>
-      <option value="">{emptyLabel}</option>
-      {options.map((option) => (
-        <option key={option.id} value={option.id}>
-          {option.name}
-        </option>
-      ))}
-    </select>
+    <fieldset className="font-semibold">
+      <legend>
+        Colaboradores <span className="text-[#cf3e81]">*</span>
+      </legend>
+      <p className="mt-1 text-sm font-normal text-[#666]">
+        Selecciona uno o varios reviewers para esta publicación.
+      </p>
+      <div className="mt-2 grid gap-2 rounded-xl border border-[#bdbdbd] bg-white p-3 sm:grid-cols-2">
+        {contributors.map((contributor) => (
+          <label
+            key={contributor.id}
+            className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition hover:bg-[#f7f7f7]"
+          >
+            <input
+              type="checkbox"
+              name="reviewerIds"
+              value={contributor.id}
+              defaultChecked={selectedIds.has(contributor.id)}
+              className="h-4 w-4 rounded border-[#bdbdbd] accent-[#cf3e81]"
+            />
+            <span>{contributor.name}</span>
+          </label>
+        ))}
+      </div>
+      {error && <span className="mt-1 block text-sm text-red-700">{error}</span>}
+    </fieldset>
   );
 }
 

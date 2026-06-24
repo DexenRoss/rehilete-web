@@ -1,10 +1,16 @@
-import type { Category, Prisma, SpecialFormat } from "@prisma/client";
+import { Prisma, type Category, type SpecialFormat } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
 export type PublicationReviewTier = "recomendado" | "favorito" | "esencial";
 
 export type PublicationActionTone = "mint" | "orange" | "magenta";
+
+export type PublicationReviewerView = {
+  id: string;
+  name: string;
+  slug: string;
+};
 
 export type PublicationCardView = {
   id: string;
@@ -17,6 +23,8 @@ export type PublicationCardView = {
   excerpt: string;
   description: string;
   quote: string;
+  reviewer: string | null;
+  reviewers: PublicationReviewerView[];
   imageSrc: string;
   imageAlt: string;
   tier: PublicationReviewTier | null;
@@ -86,6 +94,7 @@ export type PublicationReviewDetailView = PublicationCardView & {
   workType: string | null;
   externalUrl: string | null;
   reviewer: string | null;
+  reviewers: PublicationReviewerView[];
   subjectCreatorName: string | null;
   artistName: string | null;
   albumName: string | null;
@@ -108,6 +117,7 @@ export type PublicationSpecialDetailView = PublicationSpecialCardView & {
   workType: string | null;
   externalUrl: string | null;
   reviewer: string | null;
+  reviewers: PublicationReviewerView[];
   subjectCreatorName: string | null;
   specialItems: PublicationSpecialItemView[];
   tags: { id: string; name: string; slug: string }[];
@@ -123,7 +133,7 @@ const categoryAssets: Record<
 > = {
   musica: {
     label: "Toda la musica",
-    imageSrc: "/images/rehilete/Música.png",
+    imageSrc: "/images/rehilete/MÃƒÂºsica.png",
     imageAlt: "Icono de musica",
   },
   cine: {
@@ -270,9 +280,9 @@ const reviewTierMap = {
 } as const;
 
 const specialFormatLabelMap: Record<SpecialFormat, string> = {
-  ARTICLE: "Artículo especial",
+  ARTICLE: "ArtÃƒÂ­culo especial",
   LIST: "Lista",
-  COLLECTION: "Colección",
+  COLLECTION: "ColecciÃƒÂ³n",
   FEATURE: "Reportaje especial",
 };
 
@@ -290,6 +300,91 @@ function getQuote(description: string | null, body: string) {
   return `"${excerpt}"`;
 }
 
+type PublicationWithReviewers = {
+  reviewer?: { id: string; name: string; slug: string } | null;
+  reviewers?: Array<{
+    contributor: { id: string; name: string; slug: string };
+  }> | null;
+};
+
+function getPublicationReviewers(
+  publication: PublicationWithReviewers,
+): PublicationReviewerView[] {
+  const reviewers = publication.reviewers?.map(({ contributor }) => ({
+    id: contributor.id,
+    name: contributor.name,
+    slug: contributor.slug,
+  })) ?? [];
+
+  if (reviewers.length > 0) return reviewers;
+
+  return publication.reviewer
+    ? [{
+        id: publication.reviewer.id,
+        name: publication.reviewer.name,
+        slug: publication.reviewer.slug,
+      }]
+    : [];
+}
+
+function formatReviewerNames(reviewers: PublicationReviewerView[]) {
+  const names = reviewers.map((reviewer) => reviewer.name.trim()).filter(Boolean);
+
+  if (names.length === 0) return null;
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} y ${names[1]}`;
+
+  return `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
+}
+
+type PublicationReviewerRow = {
+  publicationId: string;
+  id: string;
+  name: string;
+  slug: string;
+};
+
+async function getPublicationReviewersByPublicationId(publicationIds: string[]) {
+  if (publicationIds.length === 0) return new Map<string, PublicationReviewerView[]>();
+
+  const rows = await prisma.$queryRaw<PublicationReviewerRow[]>`
+    SELECT
+      pr."publicationId",
+      c."id",
+      c."name",
+      c."slug"
+    FROM "PublicationReviewer" pr
+    INNER JOIN "Contributor" c ON c."id" = pr."contributorId"
+    WHERE pr."publicationId" IN (${Prisma.join(publicationIds)})
+    ORDER BY pr."publicationId" ASC, pr."position" ASC, pr."createdAt" ASC
+  `;
+  const reviewersByPublicationId = new Map<string, PublicationReviewerView[]>();
+
+  for (const row of rows) {
+    const reviewers = reviewersByPublicationId.get(row.publicationId) ?? [];
+    reviewers.push({
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+    });
+    reviewersByPublicationId.set(row.publicationId, reviewers);
+  }
+
+  return reviewersByPublicationId;
+}
+
+function withReviewers<T extends { id: string }>(
+  publication: T,
+  reviewersByPublicationId: Map<string, PublicationReviewerView[]>,
+) {
+  const reviewers = reviewersByPublicationId.get(publication.id) ?? [];
+
+  return {
+    ...publication,
+    reviewers: reviewers.map((contributor) => ({ contributor })),
+  };
+}
+
 function toPublicationCardView(
   publication: PublishedReview,
 ): PublicationCardView {
@@ -299,6 +394,7 @@ function toPublicationCardView(
     "Rehilete";
   const category = publication.category?.name?.trim() || "Resena";
   const excerpt = getExcerpt(publication.description, publication.body);
+  const reviewers = getPublicationReviewers(publication);
 
   return {
     id: publication.id,
@@ -314,6 +410,8 @@ function toPublicationCardView(
     excerpt,
     description: excerpt,
     quote: getQuote(publication.description, publication.body),
+    reviewer: formatReviewerNames(reviewers),
+    reviewers,
     imageSrc: publication.coverImageUrl?.trim() || PLACEHOLDER_IMAGE,
     imageAlt:
       publication.coverImageAlt?.trim() ||
@@ -344,7 +442,8 @@ function toPublicationReviewDetailView(
     categorySlug: publication.category?.slug ?? null,
     workType: publication.workType,
     externalUrl: publication.externalUrl,
-    reviewer: publication.reviewer?.name ?? null,
+    reviewer: formatReviewerNames(getPublicationReviewers(publication)),
+    reviewers: getPublicationReviewers(publication),
     subjectCreatorName: publication.subjectCreatorName,
     artistName: publication.artistName,
     albumName: publication.albumName,
@@ -408,7 +507,8 @@ function toPublicationSpecialDetailView(
     category: publication.category?.name ?? null,
     workType: publication.workType,
     externalUrl: publication.externalUrl,
-    reviewer: publication.reviewer?.name ?? null,
+    reviewer: formatReviewerNames(getPublicationReviewers(publication)),
+    reviewers: getPublicationReviewers(publication),
     subjectCreatorName: publication.subjectCreatorName,
     specialItems: publication.specialItems.map((item) => ({
       id: item.id,
@@ -449,8 +549,13 @@ export async function getLatestPublishedReviews(limit = 5) {
     orderBy: publishedReviewOrderBy,
     take: limit,
   });
+  const reviewersByPublicationId = await getPublicationReviewersByPublicationId(
+    publications.map((publication) => publication.id),
+  );
 
-  return publications.map(toPublicationCardView);
+  return publications.map((publication) =>
+    toPublicationCardView(withReviewers(publication, reviewersByPublicationId)),
+  );
 }
 
 export async function getPublishedReviewBySlug(slug: string) {
@@ -462,7 +567,15 @@ export async function getPublishedReviewBySlug(slug: string) {
     include: publishedReviewDetailInclude,
   });
 
-  return publication ? toPublicationReviewDetailView(publication) : null;
+  if (!publication) return null;
+
+  const reviewersByPublicationId = await getPublicationReviewersByPublicationId([
+    publication.id,
+  ]);
+
+  return toPublicationReviewDetailView(
+    withReviewers(publication, reviewersByPublicationId),
+  );
 }
 
 export async function getLatestPublishedSpecials(limit = 4) {
@@ -485,7 +598,15 @@ export async function getPublishedSpecialBySlug(slug: string) {
     include: publishedSpecialDetailInclude,
   });
 
-  return publication ? toPublicationSpecialDetailView(publication) : null;
+  if (!publication) return null;
+
+  const reviewersByPublicationId = await getPublicationReviewersByPublicationId([
+    publication.id,
+  ]);
+
+  return toPublicationSpecialDetailView(
+    withReviewers(publication, reviewersByPublicationId),
+  );
 }
 
 export async function getPublishedReviewsByCategorySlug(categorySlug: string) {
@@ -502,7 +623,13 @@ export async function getPublishedReviewsByCategorySlug(categorySlug: string) {
     orderBy: publishedReviewOrderBy,
   });
 
-  return publications.map(toPublicationCardView);
+  const reviewersByPublicationId = await getPublicationReviewersByPublicationId(
+    publications.map((publication) => publication.id),
+  );
+
+  return publications.map((publication) =>
+    toPublicationCardView(withReviewers(publication, reviewersByPublicationId)),
+  );
 }
 
 export async function getFeaturedPublishedReview() {
@@ -512,7 +639,13 @@ export async function getFeaturedPublishedReview() {
     orderBy: publishedReviewOrderBy,
   });
 
-  return publication ? toPublicationCardView(publication) : null;
+  if (!publication) return null;
+
+  const reviewersByPublicationId = await getPublicationReviewersByPublicationId([
+    publication.id,
+  ]);
+
+  return toPublicationCardView(withReviewers(publication, reviewersByPublicationId));
 }
 
 export async function getPublishedReviewCategories() {

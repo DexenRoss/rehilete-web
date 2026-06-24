@@ -20,7 +20,7 @@ export default async function EditAdminPublicationPage({
 }: EditAdminPublicationPageProps) {
   const { id } = await params;
 
-  const [publication, categories, contributors] =
+  const [publication, categories, contributors, selectedReviewers] =
     await Promise.all([
       prisma.publication.findUnique({
         where: { id },
@@ -75,6 +75,12 @@ export default async function EditAdminPublicationPage({
         orderBy: { name: "asc" },
         select: { id: true, name: true },
       }),
+      prisma.$queryRaw<Array<{ contributorId: string }>>`
+        SELECT "contributorId"
+        FROM "PublicationReviewer"
+        WHERE "publicationId" = ${id}
+        ORDER BY "position" ASC, "createdAt" ASC
+      `,
     ]);
 
   if (!publication) notFound();
@@ -110,7 +116,11 @@ export default async function EditAdminPublicationPage({
     platforms: publication.platforms ?? "",
     externalUrl: publication.externalUrl ?? "",
     categoryId: publication.categoryId ?? "",
-    reviewerId: publication.reviewerId ?? "",
+    reviewerIds: selectedReviewers.length > 0
+      ? selectedReviewers.map((reviewer) => reviewer.contributorId)
+      : publication.reviewerId
+        ? [publication.reviewerId]
+        : [],
   };
 
   const updatePublicationWithId = updatePublication.bind(null, publication.id);

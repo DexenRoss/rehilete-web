@@ -108,8 +108,16 @@ const publicationSchema = z.object({
   platforms: z.string().trim().max(220).default(""),
   externalUrl: optionalHttpUrl,
   categoryId: optionalRelationId,
-  reviewerId: optionalRelationId,
+  reviewerIds: z.array(optionalRelationId).default([]),
 }).superRefine((data, ctx) => {
+  if ((data.kind === "REVIEW" || data.kind === "SPECIAL") && data.reviewerIds.length === 0) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Selecciona al menos un reviewer.",
+      path: ["reviewerIds"],
+    });
+  }
+
   if (data.kind !== "REVIEW") return;
 
   if (!data.reviewTier) {
@@ -122,6 +130,24 @@ const publicationSchema = z.object({
 });
 
 const emptyToNull = (value: string) => value || null;
+
+function normalizeReviewerIds(values: FormDataEntryValue[]) {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => value.toString().trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function getReviewerValuesSql(publicationId: string, reviewerIds: string[]) {
+  return Prisma.join(
+    reviewerIds.map((contributorId, position) =>
+      Prisma.sql`(${publicationId}, ${contributorId}, ${position})`,
+    ),
+  );
+}
 
 const reviewTierByFormValue = {
   RECOMENDADO: PublicationReviewTier.RECOMENDADO,
@@ -329,7 +355,7 @@ function parsePublicationFormData(formData: FormData) {
     platforms: formData.get("platforms"),
     externalUrl: formData.get("externalUrl"),
     categoryId: formData.get("categoryId"),
-    reviewerId: formData.get("reviewerId"),
+    reviewerIds: normalizeReviewerIds(formData.getAll("reviewerIds")),
   });
 }
 
@@ -370,8 +396,8 @@ function toPublicationWriteData(
     category: emptyToNull(data.categoryId)
       ? { connect: { id: data.categoryId } }
       : { disconnect: true },
-    reviewer: emptyToNull(data.reviewerId)
-      ? { connect: { id: data.reviewerId } }
+    reviewer: data.reviewerIds[0]
+      ? { connect: { id: data.reviewerIds[0] } }
       : { disconnect: true },
   };
 }
@@ -413,8 +439,8 @@ function toPublicationCreateData(
     category: emptyToNull(data.categoryId)
       ? { connect: { id: data.categoryId } }
       : undefined,
-    reviewer: emptyToNull(data.reviewerId)
-      ? { connect: { id: data.reviewerId } }
+    reviewer: data.reviewerIds[0]
+      ? { connect: { id: data.reviewerIds[0] } }
       : undefined,
     publishedAt: data.status === "PUBLISHED" ? new Date() : null,
   };
@@ -479,8 +505,17 @@ export async function createPublication(
   const data = parsed.data;
 
   try {
-    await prisma.publication.create({
-      data: toPublicationCreateData(data),
+    await prisma.$transaction(async (tx) => {
+      const publication = await tx.publication.create({
+        data: toPublicationCreateData(data),
+        select: { id: true },
+      });
+
+      await tx.$executeRaw`
+        INSERT INTO "PublicationReviewer" ("publicationId", "contributorId", "position")
+        VALUES ${getReviewerValuesSql(publication.id, data.reviewerIds)}
+        ON CONFLICT ("publicationId", "contributorId") DO NOTHING
+      `;
     });
   } catch (error) {
     return getPublicationMutationErrorState(error);
@@ -576,6 +611,29 @@ export async function updatePublication(
             : {}),
         },
       });
+
+      await tx.$executeRaw`
+        DELETE FROM "PublicationReviewer"
+        WHERE "publicationId" = ${id}
+        AND "contributorId" NOT IN (${Prisma.join(data.reviewerIds)})
+      `;
+
+      await tx.$executeRaw`
+        INSERT INTO "PublicationReviewer" ("publicationId", "contributorId", "position")
+        VALUES ${getReviewerValuesSql(id, data.reviewerIds)}
+        ON CONFLICT ("publicationId", "contributorId") DO NOTHING
+      `;
+
+      await Promise.all(
+        data.reviewerIds.map((contributorId, position) =>
+          tx.$executeRaw`
+            UPDATE "PublicationReviewer"
+            SET "position" = ${position}
+            WHERE "publicationId" = ${id}
+            AND "contributorId" = ${contributorId}
+          `,
+        ),
+      );
 
       await tx.specialItem.deleteMany({
         where: { specialId: id },

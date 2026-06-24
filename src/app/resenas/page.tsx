@@ -38,6 +38,8 @@ function toPublicationCardFallback(post: ReviewListPost): PublicationCardView {
     ...emptyReviewMetadata,
     excerpt: post.quote.replace(/^"|"$/g, ""),
     description: post.quote.replace(/^"|"$/g, ""),
+    reviewer: null,
+    reviewers: [],
   };
 }
 

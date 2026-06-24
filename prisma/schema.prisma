@@ -83,6 +83,7 @@ model Publication {
   updatedAt          DateTime               @updatedAt
   category           Category?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   reviewer           Contributor?           @relation("PublicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviewers          PublicationReviewer[]
   createdBy          AdminUser?             @relation("PublicationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy          AdminUser?             @relation("PublicationUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   tags               PublicationTag[]
@@ -108,14 +109,28 @@ model Category {
 }
 
 model Contributor {
-  id           String        @id @default(cuid())
-  name         String
-  slug         String        @unique
-  bio          String?
-  imageUrl     String?
-  publications Publication[] @relation("PublicationReviewer")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id                   String                @id @default(cuid())
+  name                 String
+  slug                 String                @unique
+  bio                  String?
+  imageUrl             String?
+  publications         Publication[]         @relation("PublicationReviewer")
+  reviewedPublications PublicationReviewer[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+}
+
+model PublicationReviewer {
+  publicationId String
+  contributorId String
+  position      Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  contributor Contributor @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+
+  @@id([publicationId, contributorId])
+  @@index([contributorId])
 }
 
 model Tag {
